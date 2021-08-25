@@ -9,8 +9,9 @@ public abstract class AbstractUserIn {
 
     private Long id;
     private BillingDetailsIn billingDetails;
-    private List<CommissionIn> commissions;
+    private List<Long> commissionsIds;
     private String username;
+    private String password;
     private String name;
     private String surname;
     private String email;

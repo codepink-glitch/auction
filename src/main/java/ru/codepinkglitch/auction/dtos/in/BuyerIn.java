@@ -7,6 +7,6 @@ import java.util.List;
 @Data
 public class BuyerIn extends AbstractUserIn{
 
-    private List<BidIn> bids;
+    private List<Long> bidsIds;
 
 }

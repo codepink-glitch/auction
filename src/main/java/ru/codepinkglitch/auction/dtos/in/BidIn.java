@@ -11,7 +11,7 @@ public class BidIn {
     private Long id;
     private BigDecimal amount;
     private BidStatus bidStatus;
-    private CommissionIn commission;
-    private BuyerIn buyer;
+    private Long commissionId;
+    private Long buyerId;
 
 }
