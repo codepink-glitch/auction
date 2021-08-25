@@ -23,9 +23,10 @@ public abstract class AbstractUser {
     @OneToMany
     private List<CommissionEntity> commissions;
 
-    private Role role;
-    private String username;
-    private String password;
+    @OneToOne
+    @Cascade(CascadeType.ALL)
+    private MyUserDetails userDetails;
+
     private String name;
     private String surname;
     private String email;

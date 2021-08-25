@@ -8,9 +8,5 @@ import javax.persistence.*;
 @Entity
 public class ArtistEntity extends AbstractUser{
 
-    {
-        setRole(Role.ARTIST);
-    }
-
     private String description;
 }

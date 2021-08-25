@@ -1,6 +1,7 @@
 package ru.codepinkglitch.auction.converters;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import ru.codepinkglitch.auction.dtos.in.*;
 import ru.codepinkglitch.auction.entities.*;
@@ -9,6 +10,7 @@ import ru.codepinkglitch.auction.repositories.BidRepository;
 import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.CommissionRepository;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -36,8 +38,7 @@ public class Converter {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList()));
-        buyerEntity.setUsername(buyer.getUsername());
-        buyerEntity.setPassword(buyer.getPassword());
+        buyerEntity.setUserDetails(new MyUserDetails(Arrays.asList(new MyAuthority(Role.BUYER.name())), buyer.getPassword(), buyer.getUsername()));
         buyerEntity.setName(buyer.getName());
         buyerEntity.setSurname(buyer.getName());
         buyerEntity.setEmail(buyer.getEmail());
@@ -58,8 +59,8 @@ public class Converter {
                 .map(CommissionEntity::getId)
                 .collect(Collectors.toList())
         );
-        buyerIn.setUsername(buyer.getUsername());
-        buyerIn.setPassword(buyer.getPassword());
+        buyerIn.setUsername(buyer.getUserDetails().getUsername());
+        buyerIn.setPassword(buyer.getUserDetails().getPassword());
         buyerIn.setName(buyer.getName());
         buyerIn.setSurname(buyer.getSurname());
         buyerIn.setEmail(buyer.getEmail());
@@ -102,8 +103,8 @@ public class Converter {
         artistIn.setName(artistEntity.getName());
         artistIn.setSurname(artistEntity.getSurname());
         artistIn.setBillingDetails(detailsToDto(artistEntity.getBillingDetails()));
-        artistIn.setUsername(artistEntity.getUsername());
-        artistIn.setPassword(artistEntity.getPassword());
+        artistIn.setUsername(artistEntity.getUserDetails().getUsername());
+        artistIn.setPassword(artistEntity.getUserDetails().getPassword());
         artistIn.setCommissionsIds(artistEntity.getCommissions()
                 .stream()
                 .map(CommissionEntity::getId)
@@ -120,8 +121,7 @@ public class Converter {
         artistEntity.setSurname(artistIn.getSurname());
         artistEntity.setEmail(artistIn.getEmail());
         artistEntity.setBillingDetails(detailsFromDto(artistIn.getBillingDetails()));
-        artistEntity.setUsername(artistIn.getUsername());
-        artistEntity.setPassword(artistIn.getPassword());
+        artistEntity.setUserDetails(new MyUserDetails(Arrays.asList(new MyAuthority(Role.ARTIST.name())), artistIn.getPassword(), artistIn.getUsername()));
         artistEntity.setCommissions(artistIn.getCommissionsIds()
                 .stream()
                 .map(commissionRepository::findById)
