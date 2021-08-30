@@ -12,6 +12,7 @@ import javax.persistence.Id;
 
 @NoArgsConstructor
 @Entity
+@Data
 public class MyAuthority implements GrantedAuthority {
 
     @Id

@@ -3,12 +3,16 @@ package ru.codepinkglitch.auction.controllers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import ru.codepinkglitch.auction.dtos.in.CommissionIn;
-import ru.codepinkglitch.auction.entities.Status;
-import ru.codepinkglitch.auction.services.MyUserDetailsService;
+import ru.codepinkglitch.auction.dtos.in.CommissionWrapper;
+import ru.codepinkglitch.auction.dtos.out.CommissionOut;
+import ru.codepinkglitch.auction.services.ArtistService;
+import ru.codepinkglitch.auction.services.BuyerService;
+import ru.codepinkglitch.auction.services.CommissionService;
 
-import java.util.Calendar;
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -16,26 +20,27 @@ import java.util.List;
 @RequestMapping("/main/")
 public class MainController {
 
-    private final MyUserDetailsService myUserDetailsService;
+    private final CommissionService commissionService;
 
     @PostMapping
-    public ResponseEntity<CommissionIn> createNew(@RequestBody List<String> tags,
-                                                  @RequestBody String uri){
-        CommissionIn commission = new CommissionIn();
-        commission.setStatus(Status.OPEN);
-        commission.setPublishDate(Calendar.getInstance());
-        commission.setUri(uri);
-        commission.setTags(tags);
-        //commission.setAuthor()
-        //commission.setBid(null);
-        return new ResponseEntity<>(commission, HttpStatus.OK);
+    public ResponseEntity<CommissionOut> createNew(@RequestBody CommissionWrapper commissionWrapper){
+        return new ResponseEntity<>(commissionService.create(SecurityContextHolder.getContext().getAuthentication().getName(),
+                commissionWrapper), HttpStatus.OK);
     }
 
-
-    /*
-    @GetMapping("/{username}")
-    public ResponseEntity getUser(@PathVariable String username){
-        return new ResponseEntity(myUserDetailsService.loadUserByUsername(username), HttpStatus.OK);
+    @GetMapping()
+    public ResponseEntity<List<CommissionOut>> findByTag(@RequestParam String tag){
+        return new ResponseEntity<>(commissionService.findByTag(tag), HttpStatus.OK);
     }
-     */
+
+    @GetMapping("/all")
+    public ResponseEntity<List<CommissionOut>> findAll(){
+        return new ResponseEntity<>(commissionService.findAll(), HttpStatus.OK);
+    }
+
+    @GetMapping("/bid")
+    public ResponseEntity<CommissionOut> bid(@RequestParam BigDecimal bid, @RequestParam Long commissionId){
+        return new ResponseEntity<>(commissionService.setBid(bid, commissionId, SecurityContextHolder.getContext().getAuthentication().getName()), HttpStatus.OK);
+    }
+
 }

@@ -22,59 +22,25 @@ public class MyUserDetails implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @Cascade(CascadeType.ALL)
     private List<MyAuthority> authorities;
 
     private String password;
     private String username;
-    private boolean nonExpired;
-    private boolean nonLocked;
-    private boolean credentialNonExpired;
+    private boolean accountNonExpired;
+    private boolean accountNonLocked;
+    private boolean credentialsNonExpired;
     private boolean enabled;
 
     public MyUserDetails(List<MyAuthority> authorities, String password, String username){
         this.authorities = authorities;
         this.password = password;
         this.username = username;
-        setNonExpired(true);
-        setNonLocked(true);
-        setCredentialNonExpired(true);
+        setAccountNonExpired(true);
+        setAccountNonLocked(true);
+        setCredentialsNonExpired(true);
         setEnabled(true);
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return nonExpired;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return nonLocked;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return credentialNonExpired;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
 }

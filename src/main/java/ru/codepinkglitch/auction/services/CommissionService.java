@@ -2,12 +2,16 @@ package ru.codepinkglitch.auction.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.CommissionIn;
-import ru.codepinkglitch.auction.entities.CommissionEntity;
-import ru.codepinkglitch.auction.repositories.ArtistRepository;
-import ru.codepinkglitch.auction.repositories.CommissionRepository;
+import ru.codepinkglitch.auction.dtos.in.CommissionWrapper;
+import ru.codepinkglitch.auction.dtos.out.CommissionOut;
+import ru.codepinkglitch.auction.entities.*;
+import ru.codepinkglitch.auction.repositories.*;
 
+import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,6 +22,9 @@ public class CommissionService {
 
     private final ArtistRepository artistRepository;
     private final CommissionRepository commissionRepository;
+    private final BuyerRepository buyerRepository;
+    private final UserDetailsRepository userDetailsRepository;
+    private final BidRepository bidRepository;
     private final Converter converter;
 
     public CommissionIn findById(Long id) {
@@ -49,20 +56,69 @@ public class CommissionService {
         }
     }
 
-    public List<CommissionIn> findByTag(String tag) {
-        List<CommissionEntity> list = commissionRepository.findCommissionEntityByTagsContains(tag);
-        if(list.isEmpty()) {
-            throw new RuntimeException("No such commissions.");
+    public List<CommissionOut> findByTag(String tag) {
+        List<CommissionEntity> list = commissionRepository.findAll();
+        List<CommissionOut> filteredList = list.stream().filter(x -> x.getTags().contains(tag)).map(converter::commissionToOut).collect(Collectors.toList());
+        if(!filteredList.isEmpty()) {
+            return filteredList;
         } else {
-            return list.stream()
-                    .map(converter::commissionToDto)
-                    .collect(Collectors.toList());
+            throw new RuntimeException("No such commissions.");
         }
     }
 
     public void remove(Long id) {
         if(commissionRepository.existsById(id)){
             commissionRepository.deleteById(id);
+        } else {
+            throw new RuntimeException("No such commission.");
+        }
+    }
+    public CommissionOut create(String name, CommissionWrapper commissionWrapper) {
+        CommissionEntity commission = new CommissionEntity();
+        commission.setStatus(Status.OPEN);
+        commission.setPublishDate(Calendar.getInstance());
+        commission.setUri(commissionWrapper.getUri());
+        commission.setTags(commissionWrapper.getTags());
+        commission.setAuthor(
+                artistRepository.findArtistEntityByUserDetails(
+                        userDetailsRepository.findMyUserDetailsByUsername(name)
+                ));
+        BidEntity bidEntity = new BidEntity();
+        bidEntity.setBidStatus(BidStatus.HIGHEST);
+        bidEntity.setAmount(commissionWrapper.getMinimalBid());
+        bidEntity.setBuyer(buyerRepository.getById(1L));
+        bidEntity.setCommission(commission);
+        commission.setBid(bidEntity);
+        return converter.commissionToOut(commissionRepository.save(commission));
+    }
+
+    public List<CommissionOut> findAll() {
+        return commissionRepository.findAll()
+                .stream()
+                .map(converter::commissionToOut)
+                .collect(Collectors.toList());
+    }
+
+    public CommissionOut setBid(BigDecimal bid, Long commissionId, String name) {
+        Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
+        if(optional.isPresent()){
+            CommissionEntity commissionEntity = optional.get();
+            BidEntity bidEntity = new BidEntity();
+            BidEntity lastBidEntity = commissionEntity.getBid();
+            lastBidEntity.setBidStatus(BidStatus.OUTBID);
+            bidRepository.save(lastBidEntity);
+            if(commissionEntity.getBid().getAmount().compareTo(bid) < 0){
+                bidEntity.setAmount(bid);
+            } else {
+                throw new RuntimeException("You can not outbid current bid with lower offer.");
+            }
+            bidEntity.setCommission(commissionEntity);
+            bidEntity.setBidStatus(BidStatus.HIGHEST);
+            bidEntity.setBuyer(buyerRepository.findBuyerEntityByUserDetails(
+                    userDetailsRepository.findMyUserDetailsByUsername(name)
+            ));
+            commissionEntity.setBid(bidEntity);
+            return converter.commissionToOut(commissionRepository.save(commissionEntity));
         } else {
             throw new RuntimeException("No such commission.");
         }

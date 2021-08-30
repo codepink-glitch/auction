@@ -1,6 +1,8 @@
 package ru.codepinkglitch.auction.entities;
 
 import lombok.Data;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -19,6 +21,7 @@ public class BidEntity {
     private BidStatus bidStatus;
 
     @OneToOne
+    @Cascade(CascadeType.ALL)
     private CommissionEntity commission;
 
     @ManyToOne

@@ -9,6 +9,7 @@ import ru.codepinkglitch.auction.dtos.in.BuyerIn;
 import ru.codepinkglitch.auction.services.ArtistService;
 import ru.codepinkglitch.auction.services.BuyerService;
 
+
 @RestController
 @RequestMapping("/register")
 @RequiredArgsConstructor

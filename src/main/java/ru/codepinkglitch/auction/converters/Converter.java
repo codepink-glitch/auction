@@ -1,16 +1,18 @@
 package ru.codepinkglitch.auction.converters;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import ru.codepinkglitch.auction.dtos.in.*;
+import ru.codepinkglitch.auction.dtos.out.ArtistOut;
+import ru.codepinkglitch.auction.dtos.out.BidOut;
+import ru.codepinkglitch.auction.dtos.out.CommissionOut;
 import ru.codepinkglitch.auction.entities.*;
-import ru.codepinkglitch.auction.repositories.ArtistRepository;
 import ru.codepinkglitch.auction.repositories.BidRepository;
 import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.CommissionRepository;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -175,5 +177,38 @@ public class Converter {
         commissionEntity.setAuthor(artistFromDto(commissionIn.getAuthor()));
         commissionEntity.setBid(bidFromDto(commissionIn.getBid()));
         return commissionEntity;
+    }
+
+    public CommissionOut commissionToOut(CommissionEntity commissionEntity){
+        CommissionOut commissionOut = new CommissionOut();
+        commissionOut.setId(commissionEntity.getId());
+        commissionOut.setStatus(commissionEntity.getStatus());
+        commissionOut.setPublishDate(commissionEntity.getPublishDate().get(Calendar.DAY_OF_MONTH)
+                + "." + commissionEntity.getPublishDate().get(Calendar.MONTH)
+                + "." + commissionEntity.getPublishDate().get(Calendar.YEAR)
+                + " " + commissionEntity.getPublishDate().get(Calendar.HOUR_OF_DAY)
+                + ":" + commissionEntity.getPublishDate().get(Calendar.MINUTE));
+        commissionOut.setUri(commissionEntity.getUri());
+        commissionOut.setTags(commissionEntity.getTags());
+        commissionOut.setAuthor(artistToOut(commissionEntity.getAuthor()));
+        commissionOut.setBid(bidToOut(commissionEntity.getBid()));
+        return commissionOut;
+    }
+
+    public ArtistOut artistToOut(ArtistEntity artistEntity){
+        ArtistOut artistOut = new ArtistOut();
+        artistOut.setId(artistEntity.getId());
+        artistOut.setUsername(artistEntity.getUserDetails().getUsername());
+        artistOut.setEmail(artistEntity.getEmail());
+        artistOut.setDescription(artistEntity.getDescription());
+        return artistOut;
+    }
+
+    public BidOut bidToOut(BidEntity bidEntity){
+        BidOut bidOut = new BidOut();
+        bidOut.setId(bidEntity.getId());
+        bidOut.setAmount(bidEntity.getAmount());
+        bidOut.setBuyerUsername(bidEntity.getBuyer().getUserDetails().getUsername());
+        return bidOut;
     }
 }

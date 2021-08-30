@@ -8,6 +8,8 @@ import ru.codepinkglitch.auction.dtos.in.ArtistIn;
 import ru.codepinkglitch.auction.repositories.ArtistRepository;
 import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -26,4 +28,5 @@ public class ArtistService {
             return converter.artistToDto(artistRepository.save(converter.artistFromDto(artist)));
         }
     }
+
 }
