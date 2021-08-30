@@ -15,7 +15,7 @@ public class CommissionIn {
     private String uri;
     private List<String> tags;
     private ArtistIn author;
-    private BidIn bid;
+    private List<BidIn> bids;
 
     public void update(CommissionIn commissionIn){
         if(commissionIn.getId() != null)
@@ -30,7 +30,7 @@ public class CommissionIn {
             this.tags = commissionIn.getTags();
         if(commissionIn.getAuthor() != null)
             this.author = commissionIn.getAuthor();
-        if(commissionIn.getBid() != null)
-            this.bid = commissionIn.getBid();
+        if(commissionIn.getBids() != null)
+            this.bids = commissionIn.getBids();
     }
 }

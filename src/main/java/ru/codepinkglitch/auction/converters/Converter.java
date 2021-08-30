@@ -163,7 +163,9 @@ public class Converter {
         commissionIn.setUri(commissionEntity.getUri());
         commissionIn.setTags(commissionEntity.getTags());
         commissionIn.setAuthor(artistToDto(commissionEntity.getAuthor()));
-        commissionIn.setBid(bidToDto(commissionEntity.getBid()));
+        commissionIn.setBids(commissionEntity.getBids().stream()
+                .map(this::bidToDto)
+                .collect(Collectors.toList()));
         return commissionIn;
     }
 
@@ -175,7 +177,9 @@ public class Converter {
         commissionEntity.setUri(commissionIn.getUri());
         commissionEntity.setTags(commissionIn.getTags());
         commissionEntity.setAuthor(artistFromDto(commissionIn.getAuthor()));
-        commissionEntity.setBid(bidFromDto(commissionIn.getBid()));
+        commissionEntity.setBids(commissionIn.getBids().stream()
+                .map(this::bidFromDto)
+                .collect(Collectors.toList()));
         return commissionEntity;
     }
 
@@ -191,7 +195,10 @@ public class Converter {
         commissionOut.setUri(commissionEntity.getUri());
         commissionOut.setTags(commissionEntity.getTags());
         commissionOut.setAuthor(artistToOut(commissionEntity.getAuthor()));
-        commissionOut.setBid(bidToOut(commissionEntity.getBid()));
+        commissionOut.setBid(bidToOut(commissionEntity.getBids().stream()
+                .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
+                .findFirst()
+                .orElseThrow(RuntimeException::new)));
         return commissionOut;
     }
 

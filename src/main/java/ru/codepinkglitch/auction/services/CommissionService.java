@@ -11,9 +11,7 @@ import ru.codepinkglitch.auction.entities.*;
 import ru.codepinkglitch.auction.repositories.*;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,7 +22,6 @@ public class CommissionService {
     private final CommissionRepository commissionRepository;
     private final BuyerRepository buyerRepository;
     private final UserDetailsRepository userDetailsRepository;
-    private final BidRepository bidRepository;
     private final Converter converter;
 
     public CommissionIn findById(Long id) {
@@ -88,7 +85,7 @@ public class CommissionService {
         bidEntity.setAmount(commissionWrapper.getMinimalBid());
         bidEntity.setBuyer(buyerRepository.getById(1L));
         bidEntity.setCommission(commission);
-        commission.setBid(bidEntity);
+        commission.setBids(Arrays.asList(bidEntity));
         return converter.commissionToOut(commissionRepository.save(commission));
     }
 
@@ -101,26 +98,29 @@ public class CommissionService {
 
     public CommissionOut setBid(BigDecimal bid, Long commissionId, String name) {
         Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
-        if(optional.isPresent()){
-            CommissionEntity commissionEntity = optional.get();
-            BidEntity bidEntity = new BidEntity();
-            BidEntity lastBidEntity = commissionEntity.getBid();
-            lastBidEntity.setBidStatus(BidStatus.OUTBID);
-            bidRepository.save(lastBidEntity);
-            if(commissionEntity.getBid().getAmount().compareTo(bid) < 0){
-                bidEntity.setAmount(bid);
-            } else {
-                throw new RuntimeException("You can not outbid current bid with lower offer.");
-            }
-            bidEntity.setCommission(commissionEntity);
-            bidEntity.setBidStatus(BidStatus.HIGHEST);
-            bidEntity.setBuyer(buyerRepository.findBuyerEntityByUserDetails(
-                    userDetailsRepository.findMyUserDetailsByUsername(name)
-            ));
-            commissionEntity.setBid(bidEntity);
-            return converter.commissionToOut(commissionRepository.save(commissionEntity));
-        } else {
+        if(!optional.isPresent()) {
             throw new RuntimeException("No such commission.");
         }
+        CommissionEntity commissionEntity = optional.get();
+        if(commissionEntity.getBids().stream()
+                .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST)).findFirst().orElseThrow(RuntimeException::new).getAmount().compareTo(bid) > 0){
+            throw new RuntimeException("You can not outbid with lower amount.");
+        }
+        commissionEntity.getBids().stream()
+                .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
+                .findFirst()
+                .orElseThrow(RuntimeException::new)
+                .setBidStatus(BidStatus.OUTBID);
+        BidEntity bidEntity = new BidEntity();
+        bidEntity.setBidStatus(BidStatus.HIGHEST);
+        bidEntity.setAmount(bid);
+        bidEntity.setCommission(commissionEntity);
+        bidEntity.setBuyer(
+                buyerRepository.findBuyerEntityByUserDetails
+                        (userDetailsRepository.findMyUserDetailsByUsername(name)
+                        ));
+        commissionEntity.getBids().add(bidEntity);
+        return converter.commissionToOut(commissionRepository.save(commissionEntity));
     }
+
 }

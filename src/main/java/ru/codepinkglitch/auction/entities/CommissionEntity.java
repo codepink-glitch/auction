@@ -27,7 +27,7 @@ public class CommissionEntity {
     @OneToOne
     private ArtistEntity author;
 
-    @OneToOne
+    @OneToMany
     @Cascade(CascadeType.ALL)
-    private BidEntity bid;
+    private List<BidEntity> bids;
 }
