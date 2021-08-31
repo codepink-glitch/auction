@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import ru.codepinkglitch.auction.entities.Role;
 import ru.codepinkglitch.auction.services.MyUserDetailsService;
 
 @Configuration
@@ -23,8 +24,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/register/*").permitAll()
-                .antMatchers("/main/*").authenticated()
+                .antMatchers("/register/**").permitAll()
+                .antMatchers("/main/**").authenticated()
+                .antMatchers("/artist/**").hasAuthority(Role.ARTIST.name())
+                .antMatchers("/buyer/**").hasAuthority(Role.BUYER.name())
                 .and().httpBasic()
                 .and().sessionManagement().disable();
     }

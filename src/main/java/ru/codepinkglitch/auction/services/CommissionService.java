@@ -42,16 +42,6 @@ public class CommissionService {
         }
     }
 
-    public CommissionIn update(CommissionIn commissionIn) {
-        Optional<CommissionEntity> optional = commissionRepository.findById(commissionIn.getId());
-        if (optional.isPresent()) {
-            CommissionIn commission = converter.commissionToDto(optional.get());
-            commission.update(commissionIn);
-            return save(commission);
-        } else {
-            throw new RuntimeException("Can not update this commission.");
-        }
-    }
 
     public List<CommissionOut> findByTag(String tag) {
         List<CommissionEntity> list = commissionRepository.findAll();
@@ -74,6 +64,9 @@ public class CommissionService {
         CommissionEntity commission = new CommissionEntity();
         commission.setStatus(Status.OPEN);
         commission.setPublishDate(Calendar.getInstance());
+        Calendar instance = Calendar.getInstance();
+        instance.add(Calendar.DATE, commissionWrapper.getPeriod());
+        commission.setClosingDate(instance);
         commission.setUri(commissionWrapper.getUri());
         commission.setTags(commissionWrapper.getTags());
         commission.setAuthor(
@@ -86,7 +79,10 @@ public class CommissionService {
         bidEntity.setBuyer(buyerRepository.getById(1L));
         bidEntity.setCommission(commission);
         commission.setBids(Arrays.asList(bidEntity));
-        return converter.commissionToOut(commissionRepository.save(commission));
+        CommissionOut commissionOut = converter.commissionToOut(commissionRepository.save(commission));
+        Timer timer = new Timer();
+        timer.schedule(scheduleClosing(commissionOut.getId()), commission.getClosingDate().getTime());
+        return commissionOut;
     }
 
     public List<CommissionOut> findAll() {
@@ -123,4 +119,21 @@ public class CommissionService {
         return converter.commissionToOut(commissionRepository.save(commissionEntity));
     }
 
+    private TimerTask scheduleClosing(Long id){
+        return new TimerTask() {
+            @Override
+            public void run() {
+                Optional<CommissionEntity> optional = commissionRepository.findById(id);
+                if(!optional.isPresent())
+                    throw new RuntimeException("Something went wrong with timer.");
+                CommissionEntity commissionEntity = optional.get();
+                commissionEntity.setStatus(Status.CLOSED);
+                commissionEntity.getBids().stream()
+                        .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
+                        .findFirst()
+                        .orElseThrow(RuntimeException::new)
+                        .setBidStatus(BidStatus.WON);
+            }
+        };
+    }
 }

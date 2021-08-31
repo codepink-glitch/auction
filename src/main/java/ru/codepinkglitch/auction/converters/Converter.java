@@ -160,6 +160,7 @@ public class Converter {
         commissionIn.setId(commissionEntity.getId());
         commissionIn.setStatus(commissionEntity.getStatus());
         commissionIn.setPublishDate(commissionEntity.getPublishDate());
+        commissionIn.setClosingDate(commissionEntity.getClosingDate());
         commissionIn.setUri(commissionEntity.getUri());
         commissionIn.setTags(commissionEntity.getTags());
         commissionIn.setAuthor(artistToDto(commissionEntity.getAuthor()));
@@ -174,6 +175,7 @@ public class Converter {
         commissionEntity.setId(commissionIn.getId());
         commissionEntity.setStatus(commissionIn.getStatus());
         commissionEntity.setPublishDate(commissionIn.getPublishDate());
+        commissionEntity.setClosingDate(commissionIn.getClosingDate());
         commissionEntity.setUri(commissionIn.getUri());
         commissionEntity.setTags(commissionIn.getTags());
         commissionEntity.setAuthor(artistFromDto(commissionIn.getAuthor()));
@@ -188,10 +190,15 @@ public class Converter {
         commissionOut.setId(commissionEntity.getId());
         commissionOut.setStatus(commissionEntity.getStatus());
         commissionOut.setPublishDate(commissionEntity.getPublishDate().get(Calendar.DAY_OF_MONTH)
-                + "." + commissionEntity.getPublishDate().get(Calendar.MONTH)
+                + "." + (commissionEntity.getPublishDate().get(Calendar.MONTH) + 1)
                 + "." + commissionEntity.getPublishDate().get(Calendar.YEAR)
                 + " " + commissionEntity.getPublishDate().get(Calendar.HOUR_OF_DAY)
                 + ":" + commissionEntity.getPublishDate().get(Calendar.MINUTE));
+        commissionOut.setClosingDate(commissionEntity.getClosingDate().get(Calendar.DAY_OF_MONTH)
+                + "." + (commissionEntity.getClosingDate().get(Calendar.MONTH) + 1)
+                + "." + commissionEntity.getClosingDate().get(Calendar.YEAR)
+                + " " + commissionEntity.getClosingDate().get(Calendar.HOUR_OF_DAY)
+                + ":" + commissionEntity.getClosingDate().get(Calendar.MINUTE));
         commissionOut.setUri(commissionEntity.getUri());
         commissionOut.setTags(commissionEntity.getTags());
         commissionOut.setAuthor(artistToOut(commissionEntity.getAuthor()));

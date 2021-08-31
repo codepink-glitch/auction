@@ -19,6 +19,7 @@ public class CommissionEntity {
 
     private Status status;
     private Calendar publishDate;
+    private Calendar closingDate;
     private String uri;
 
     @ElementCollection

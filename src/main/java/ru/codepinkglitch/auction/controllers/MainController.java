@@ -29,7 +29,7 @@ public class MainController {
                 commissionWrapper), HttpStatus.OK);
     }
 
-    @GetMapping()
+    @GetMapping("/find")
     public ResponseEntity<List<CommissionOut>> findByTag(@RequestParam String tag){
         return new ResponseEntity<>(commissionService.findByTag(tag), HttpStatus.OK);
     }
@@ -40,10 +40,11 @@ public class MainController {
     }
 
 
-    @GetMapping("/bid")
+    @GetMapping()
     public ResponseEntity<CommissionOut> bid(@RequestParam BigDecimal bid, @RequestParam Long commissionId){
         return new ResponseEntity<>(commissionService.setBid(bid, commissionId, SecurityContextHolder.getContext().getAuthentication().getName()), HttpStatus.OK);
     }
+
 
 
 }

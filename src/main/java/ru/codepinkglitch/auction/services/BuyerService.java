@@ -58,4 +58,32 @@ public class BuyerService {
         }
     }
 
+    public BuyerIn update(String name, BuyerIn buyerIn) {
+        BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
+        BuyerIn buyerIn1 = converter.buyerToDto(buyerEntity);
+        buyerIn1.setBillingDetails(buyerIn.getBillingDetails());
+        buyerIn1.setCommissionsIds(buyerIn.getCommissionsIds());
+        buyerIn1.setUsername(buyerIn.getUsername());
+        buyerIn1.setPassword(buyerIn.getPassword());
+        buyerIn1.setName(buyerIn.getName());
+        buyerIn1.setSurname(buyerIn.getSurname());
+        buyerIn1.setEmail(buyerIn.getEmail());
+        return converter.buyerToDto(buyerRepository.save(converter.buyerFromDto(buyerIn1)));
+    }
+
+    public void delete(String name) {
+        BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
+        if(buyerEntity == null){
+            throw new RuntimeException("No such user.");
+        }
+        buyerRepository.delete(buyerEntity);
+    }
+
+    public BuyerIn find(String name) {
+        BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
+        if(buyerEntity == null){
+            throw new RuntimeException("No such user.");
+        }
+        return converter.buyerToDto(buyerEntity);
+    }
 }

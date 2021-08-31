@@ -27,7 +27,10 @@ public class MyUserDetails implements UserDetails {
     private List<MyAuthority> authorities;
 
     private String password;
+
+    @Column(unique = true)
     private String username;
+
     private boolean accountNonExpired;
     private boolean accountNonLocked;
     private boolean credentialsNonExpired;

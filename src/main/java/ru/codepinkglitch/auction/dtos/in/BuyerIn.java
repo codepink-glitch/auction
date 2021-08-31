@@ -9,4 +9,5 @@ public class BuyerIn extends AbstractUserIn{
 
     private List<Long> bidsIds;
 
+
 }

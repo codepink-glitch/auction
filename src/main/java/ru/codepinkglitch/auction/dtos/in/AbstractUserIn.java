@@ -1,5 +1,6 @@
 package ru.codepinkglitch.auction.dtos.in;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
@@ -15,4 +16,5 @@ public abstract class AbstractUserIn {
     private String name;
     private String surname;
     private String email;
+
 }

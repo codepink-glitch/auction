@@ -12,6 +12,7 @@ public class CommissionIn {
     private Long id;
     private Status status;
     private Calendar publishDate;
+    private Calendar closingDate;
     private String uri;
     private List<String> tags;
     private ArtistIn author;

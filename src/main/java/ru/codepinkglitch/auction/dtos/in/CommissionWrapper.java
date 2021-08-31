@@ -14,4 +14,5 @@ public class CommissionWrapper {
     private List<String> tags;
     private String uri;
     private BigDecimal minimalBid;
+    private Integer period;
 }
