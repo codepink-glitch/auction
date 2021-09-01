@@ -30,4 +30,22 @@ public abstract class AbstractUser {
     private String name;
     private String surname;
     private String email;
+
+    public void update(AbstractUser abstractUser){
+        if(billingDetails != null) {
+            this.billingDetails = abstractUser.getBillingDetails();
+        }
+        if(userDetails != null) {
+            this.userDetails = abstractUser.getUserDetails();
+        }
+        if(name != null) {
+            this.name = abstractUser.getName();
+        }
+        if(surname != null) {
+            this.surname = abstractUser.getSurname();
+        }
+        if(email != null) {
+            this.email = abstractUser.getEmail();
+        }
+    }
 }

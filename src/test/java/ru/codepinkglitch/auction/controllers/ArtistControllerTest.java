@@ -54,7 +54,6 @@ public class ArtistControllerTest {
     String username = "Vasily123";
     String password = "123";
     String email = "Vasily@mail.su";
-    Long id;
     String token = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
     static boolean setupIsDone = false;
 
@@ -93,7 +92,7 @@ public class ArtistControllerTest {
             artistEntity.setSurname("Vasiliev");
             artistEntity.setEmail(email);
             artistEntity.setDescription("default");
-            id = artistService.save(converter.artistToDto(artistEntity)).getId();
+            artistService.save(converter.artistToDto(artistEntity));
             setupIsDone = true;
         }
     }
@@ -109,7 +108,6 @@ public class ArtistControllerTest {
                 .andDo(print())
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.email").value(email))
-                .andExpect(jsonPath("$.id").value(id))
                 .andExpect(status().isOk());
     }
 
@@ -125,7 +123,6 @@ public class ArtistControllerTest {
                 .header("Authorization", "Basic " + token))
                 .andDo(document("." + uri))
                 .andExpect(jsonPath("$.username").value(username))
-                .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(status().isOk());
     }

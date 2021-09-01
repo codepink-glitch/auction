@@ -12,4 +12,6 @@ public class BuyerEntity extends AbstractUser {
     @OneToMany
     private List<BidEntity> bids;
 
+
+
 }

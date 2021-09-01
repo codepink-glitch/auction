@@ -32,15 +32,9 @@ public class ArtistService {
 
     public ArtistIn update(String name, ArtistIn artistIn) {
         ArtistEntity artistEntity = artistRepository.findArtistEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
-        ArtistIn artistIn1 = converter.artistToDto(artistEntity);
-        artistIn1.setDescription(artistIn.getDescription());
-        artistIn1.setBillingDetails(artistIn.getBillingDetails());
-        artistIn1.setUsername(artistIn.getUsername());
-        artistIn1.setPassword(artistIn.getPassword());
-        artistIn1.setName(artistIn.getName());
-        artistIn1.setSurname(artistIn.getSurname());
-        artistIn1.setEmail(artistIn.getEmail());
-        return artistIn1;
+        ArtistEntity fromEntity = converter.artistFromDto(artistIn);
+        artistEntity.update(fromEntity);
+        return converter.artistToDto(artistRepository.save(artistEntity));
     }
 
     public void delete(String name) {

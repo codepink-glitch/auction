@@ -9,4 +9,11 @@ import javax.persistence.*;
 public class ArtistEntity extends AbstractUser{
 
     private String description;
+
+    public void update(ArtistEntity artistEntity){
+        super.update(artistEntity);
+        if(description != null){
+            this.description = artistEntity.getDescription();
+        }
+    }
 }
