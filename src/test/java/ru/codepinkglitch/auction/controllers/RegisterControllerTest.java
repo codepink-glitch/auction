@@ -88,6 +88,7 @@ public class RegisterControllerTest {
     }
 
     @Test
+    @Ignore
     public void newArtist() throws Exception{
         ArtistIn artistIn = new ArtistIn();
         BillingDetailsIn billingDetailsIn = new BillingDetailsIn();

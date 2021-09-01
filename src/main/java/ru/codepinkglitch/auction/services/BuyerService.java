@@ -62,7 +62,6 @@ public class BuyerService {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         BuyerIn buyerIn1 = converter.buyerToDto(buyerEntity);
         buyerIn1.setBillingDetails(buyerIn.getBillingDetails());
-        buyerIn1.setCommissionsIds(buyerIn.getCommissionsIds());
         buyerIn1.setUsername(buyerIn.getUsername());
         buyerIn1.setPassword(buyerIn.getPassword());
         buyerIn1.setName(buyerIn.getName());

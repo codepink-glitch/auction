@@ -1,8 +1,9 @@
 package ru.codepinkglitch.auction.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.*;
-import org.junit.jupiter.api.Order;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,23 +17,23 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.entities.*;
-import ru.codepinkglitch.auction.services.ArtistService;
+import ru.codepinkglitch.auction.services.BuyerService;
 import ru.codepinkglitch.auction.services.MyUserDetailsService;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
-public class ArtistControllerTest {
+public class BuyerControllerTest {
 
     @Autowired
     WebApplicationContext webApplicationContext;
@@ -44,14 +45,14 @@ public class ArtistControllerTest {
     Converter converter;
 
     @Autowired
-    ArtistService artistService;
-
-    @Autowired
     MyUserDetailsService myUserDetailsService;
 
+    @Autowired
+    BuyerService buyerService;
+
     MockMvc mockMvc;
-    ArtistEntity artistEntity;
-    String username = "Vasily123";
+    BuyerEntity buyerEntity;
+    String username = "Vasily321";
     String password = "123";
     String email = "Vasily@mail.su";
     Long id;
@@ -71,10 +72,9 @@ public class ArtistControllerTest {
         init();
     }
 
-
-    private void init() {
-        if(!setupIsDone) {
-            artistEntity = new ArtistEntity();
+    private void init(){
+        if(!setupIsDone){
+            buyerEntity = new BuyerEntity();
             BillingDetailsEntity billingDetailsEntity = new BillingDetailsEntity();
             billingDetailsEntity.setName("Vasily Vasiliev");
             billingDetailsEntity.setStreet("Pupkina");
@@ -84,29 +84,28 @@ public class ArtistControllerTest {
             billingDetailsEntity.setCcNumber("1111 1111 1111 1111 1111");
             billingDetailsEntity.setCcExpiration("10/22");
             billingDetailsEntity.setCcCVV("111");
-            artistEntity.setBillingDetails(billingDetailsEntity);
-            artistEntity.setCommissions(new ArrayList<>());
+            buyerEntity.setBillingDetails(billingDetailsEntity);
+            buyerEntity.setCommissions(new ArrayList<>());
+            buyerEntity.setBids(new ArrayList<>());
             MyAuthority myAuthority = new MyAuthority();
-            myAuthority.setAuthority(Role.ARTIST.name());
-            artistEntity.setUserDetails(new MyUserDetails(Collections.singletonList(myAuthority), password, username));
-            artistEntity.setName("Vasily");
-            artistEntity.setSurname("Vasiliev");
-            artistEntity.setEmail(email);
-            artistEntity.setDescription("default");
-            id = artistService.save(converter.artistToDto(artistEntity)).getId();
+            myAuthority.setAuthority(Role.BUYER.name());
+            buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(myAuthority), password, username));
+            buyerEntity.setName("Vasily");
+            buyerEntity.setSurname("Vasiliev");
+            buyerEntity.setEmail(email);
+            id = buyerService.save(converter.buyerToDto(buyerEntity)).getId();
             setupIsDone = true;
         }
     }
 
     @Test
-    public void getArtist() throws Exception{
-        String uri = "/artist/";
+    public void getBuyer() throws Exception{
+        String uri = "/buyer/";
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Basic " + token))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Basic " + token))
                 .andDo(document("." + uri))
-                .andDo(print())
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(jsonPath("$.id").value(id))
@@ -114,33 +113,19 @@ public class ArtistControllerTest {
     }
 
     @Test
-    public void updateArtist() throws Exception{
-        String uri = "/artist/";
+    public void updateBuyer() throws Exception{
+        String uri = "/buyer/";
         email = "VasilyNewMail@mail.ru";
-        artistEntity.setEmail(email);
+        buyerEntity.setEmail(email);
 
         mockMvc.perform(MockMvcRequestBuilders.put(uri)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(converter.artistToDto(artistEntity)))
+                .content(objectMapper.writeValueAsString(converter.buyerToDto(buyerEntity)))
                 .header("Authorization", "Basic " + token))
                 .andDo(document("." + uri))
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(status().isOk());
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void zdeleteArtist() throws Exception{
-        String uri = "/artist/";
-
-        mockMvc.perform(MockMvcRequestBuilders.delete(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri))
-                .andExpect(content().string("Account deleted."))
-                .andExpect(status().isOk());
-
-        artistService.find(username);
     }
 }

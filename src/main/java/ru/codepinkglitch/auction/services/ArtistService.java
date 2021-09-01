@@ -35,7 +35,6 @@ public class ArtistService {
         ArtistIn artistIn1 = converter.artistToDto(artistEntity);
         artistIn1.setDescription(artistIn.getDescription());
         artistIn1.setBillingDetails(artistIn.getBillingDetails());
-        artistIn1.setCommissionsIds(artistIn.getCommissionsIds());
         artistIn1.setUsername(artistIn.getUsername());
         artistIn1.setPassword(artistIn.getPassword());
         artistIn1.setName(artistIn.getName());
