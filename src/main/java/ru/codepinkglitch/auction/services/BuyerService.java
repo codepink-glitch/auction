@@ -12,6 +12,7 @@ import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -41,9 +42,7 @@ public class BuyerService {
         buyer.setBillingDetails(billingDetails);
         buyer.setEmail("default");
         List<MyAuthority> list = new ArrayList<>();
-        list.add(new MyAuthority(Role.BUYER.name()));
-        MyUserDetails myUserDetails = new MyUserDetails(list, "default", "default");
-        buyer.setUserDetails(myUserDetails);
+        buyer.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())), "default", "default", 1L));
         buyer.setId(1L);
         buyerRepository.save(buyer);
     }

@@ -10,6 +10,7 @@ import ru.codepinkglitch.auction.entities.*;
 import ru.codepinkglitch.auction.repositories.BidRepository;
 import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.CommissionRepository;
+import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -40,7 +41,7 @@ public class Converter {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList()));
-        buyerEntity.setUserDetails(new MyUserDetails(Arrays.asList(new MyAuthority(Role.BUYER.name())), buyer.getPassword(), buyer.getUsername()));
+        buyerEntity.setUserDetails(new MyUserDetails(Arrays.asList(new MyAuthority(Role.BUYER.name())), buyer.getPassword(), buyer.getUsername(), buyer.getUserDetailsId()));
         buyerEntity.setEmail(buyer.getEmail());
         buyerEntity.setBillingDetails(detailsFromDto(buyer.getBillingDetails()));
         return buyerEntity;
@@ -61,6 +62,7 @@ public class Converter {
         );
         buyerIn.setUsername(buyer.getUserDetails().getUsername());
         buyerIn.setPassword(buyer.getUserDetails().getPassword());
+        buyerIn.setUserDetailsId(buyer.getUserDetails().getId());
         buyerIn.setEmail(buyer.getEmail());
         buyerIn.setBillingDetails(detailsToDto(buyer.getBillingDetails()));
         return buyerIn;
@@ -101,6 +103,7 @@ public class Converter {
         artistIn.setBillingDetails(detailsToDto(artistEntity.getBillingDetails()));
         artistIn.setUsername(artistEntity.getUserDetails().getUsername());
         artistIn.setPassword(artistEntity.getUserDetails().getPassword());
+        artistIn.setUserDetailsId(artistEntity.getUserDetails().getId());
         artistIn.setCommissionsIds(artistEntity.getCommissions()
                 .stream()
                 .map(CommissionEntity::getId)
@@ -115,7 +118,7 @@ public class Converter {
         artistEntity.setId(artistIn.getId());
         artistEntity.setEmail(artistIn.getEmail());
         artistEntity.setBillingDetails(detailsFromDto(artistIn.getBillingDetails()));
-        artistEntity.setUserDetails(new MyUserDetails(Arrays.asList(new MyAuthority(Role.ARTIST.name())), artistIn.getPassword(), artistIn.getUsername()));
+        artistEntity.setUserDetails(new MyUserDetails(Arrays.asList(new MyAuthority(Role.ARTIST.name())), artistIn.getPassword(), artistIn.getUsername(), artistIn.getUserDetailsId()));
         artistEntity.setCommissions(artistIn.getCommissionsIds()
                 .stream()
                 .map(commissionRepository::findById)

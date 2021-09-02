@@ -110,6 +110,7 @@ public class ArtistControllerTest {
     }
 
     @Test
+    @Ignore
     public void updateArtist() throws Exception{
         String uri = "/artist/";
         email = "VasilyNewMail@mail.ru";

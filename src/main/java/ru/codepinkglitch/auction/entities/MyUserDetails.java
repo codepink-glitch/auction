@@ -36,6 +36,17 @@ public class MyUserDetails implements UserDetails {
     private boolean credentialsNonExpired;
     private boolean enabled;
 
+    public MyUserDetails(List<MyAuthority> authorities, String password, String username, Long id){
+        this.authorities = authorities;
+        this.password = password;
+        this.username = username;
+        this.id = id;
+        setAccountNonExpired(true);
+        setAccountNonLocked(true);
+        setCredentialsNonExpired(true);
+        setEnabled(true);
+    }
+
     public MyUserDetails(List<MyAuthority> authorities, String password, String username){
         this.authorities = authorities;
         this.password = password;

@@ -8,6 +8,7 @@ import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
 import ru.codepinkglitch.auction.entities.ArtistEntity;
 import ru.codepinkglitch.auction.repositories.ArtistRepository;
+import ru.codepinkglitch.auction.repositories.BillingDetailsRepository;
 import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class ArtistService {
 
     private final ArtistRepository artistRepository;
     private final UserDetailsRepository userDetailsRepository;
+    private final BillingDetailsRepository billingDetailsRepository;
     private final Converter converter;
     private static final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 

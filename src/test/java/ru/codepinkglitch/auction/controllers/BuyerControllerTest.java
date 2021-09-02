@@ -2,8 +2,12 @@ package ru.codepinkglitch.auction.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,7 +24,6 @@ import ru.codepinkglitch.auction.entities.*;
 import ru.codepinkglitch.auction.services.BuyerService;
 import ru.codepinkglitch.auction.services.MyUserDetailsService;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -28,11 +31,11 @@ import java.util.Collections;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
+@TestMethodOrder(OrderAnnotation.class)
 public class BuyerControllerTest {
 
     @Autowired
@@ -55,7 +58,6 @@ public class BuyerControllerTest {
     String username = "Vasily321";
     String password = "123";
     String email = "Vasily@mail.su";
-    Long id;
     String token = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
     static boolean setupIsDone = false;
 
@@ -91,12 +93,13 @@ public class BuyerControllerTest {
             myAuthority.setAuthority(Role.BUYER.name());
             buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(myAuthority), password, username));
             buyerEntity.setEmail(email);
-            id = buyerService.save(converter.buyerToDto(buyerEntity)).getId();
+            buyerService.save(converter.buyerToDto(buyerEntity));
             setupIsDone = true;
         }
     }
 
     @Test
+    @Order(1)
     public void getBuyer() throws Exception{
         String uri = "/buyer/";
 
@@ -106,11 +109,11 @@ public class BuyerControllerTest {
                 .andDo(document("." + uri))
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.email").value(email))
-                .andExpect(jsonPath("$.id").value(id))
                 .andExpect(status().isOk());
     }
 
     @Test
+    @Ignore
     public void updateBuyer() throws Exception{
         String uri = "/buyer/";
         email = "VasilyNewMail@mail.ru";
@@ -122,8 +125,22 @@ public class BuyerControllerTest {
                 .header("Authorization", "Basic " + token))
                 .andDo(document("." + uri))
                 .andExpect(jsonPath("$.username").value(username))
-                .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(status().isOk());
+    }
+
+    @Test(expected = RuntimeException.class)
+    @Order(2)
+    public void deleteBuyer() throws Exception{
+        String uri = "/buyer";
+
+        mockMvc.perform(MockMvcRequestBuilders.delete(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Basic " + token))
+                .andDo(document("." + uri))
+                .andExpect(content().string("Account deleted."))
+                .andExpect(status().isOk());
+
+        buyerService.find(username);
     }
 }
