@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.converters.Converter;
+import ru.codepinkglitch.auction.dtos.in.ArtistIn;
 import ru.codepinkglitch.auction.entities.*;
 import ru.codepinkglitch.auction.services.ArtistService;
 import ru.codepinkglitch.auction.services.MyUserDetailsService;
@@ -51,6 +52,7 @@ public class ArtistControllerTest {
 
     MockMvc mockMvc;
     ArtistEntity artistEntity;
+    ArtistIn saved;
     String username = "Vasily123";
     String password = "123";
     String email = "Vasily@mail.su";
@@ -90,7 +92,7 @@ public class ArtistControllerTest {
             artistEntity.setUserDetails(new MyUserDetails(Collections.singletonList(myAuthority), password, username));
             artistEntity.setEmail(email);
             artistEntity.setDescription("default");
-            artistService.save(converter.artistToDto(artistEntity));
+            saved = artistService.save(converter.artistToDto(artistEntity));
             setupIsDone = true;
         }
     }
@@ -110,15 +112,14 @@ public class ArtistControllerTest {
     }
 
     @Test
-    @Ignore
     public void updateArtist() throws Exception{
         String uri = "/artist/";
         email = "VasilyNewMail@mail.ru";
-        artistEntity.setEmail(email);
+        saved.setEmail(email);
 
         mockMvc.perform(MockMvcRequestBuilders.put(uri)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(converter.artistToDto(artistEntity)))
+                .content(objectMapper.writeValueAsString(saved))
                 .header("Authorization", "Basic " + token))
                 .andDo(document("." + uri))
                 .andExpect(jsonPath("$.username").value(username))
@@ -127,7 +128,7 @@ public class ArtistControllerTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void zdeleteArtist() throws Exception{
+    public void deleteArtist() throws Exception{
         String uri = "/artist/";
 
         mockMvc.perform(MockMvcRequestBuilders.delete(uri)

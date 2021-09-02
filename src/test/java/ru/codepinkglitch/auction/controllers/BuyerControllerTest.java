@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.converters.Converter;
+import ru.codepinkglitch.auction.dtos.in.BuyerIn;
 import ru.codepinkglitch.auction.entities.*;
 import ru.codepinkglitch.auction.services.BuyerService;
 import ru.codepinkglitch.auction.services.MyUserDetailsService;
@@ -55,6 +56,7 @@ public class BuyerControllerTest {
 
     MockMvc mockMvc;
     BuyerEntity buyerEntity;
+    BuyerIn saved;
     String username = "Vasily321";
     String password = "123";
     String email = "Vasily@mail.su";
@@ -93,7 +95,7 @@ public class BuyerControllerTest {
             myAuthority.setAuthority(Role.BUYER.name());
             buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(myAuthority), password, username));
             buyerEntity.setEmail(email);
-            buyerService.save(converter.buyerToDto(buyerEntity));
+            saved = buyerService.save(converter.buyerToDto(buyerEntity));
             setupIsDone = true;
         }
     }
@@ -113,15 +115,14 @@ public class BuyerControllerTest {
     }
 
     @Test
-    @Ignore
     public void updateBuyer() throws Exception{
         String uri = "/buyer/";
         email = "VasilyNewMail@mail.ru";
-        buyerEntity.setEmail(email);
+        saved.setEmail(email);
 
         mockMvc.perform(MockMvcRequestBuilders.put(uri)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(converter.buyerToDto(buyerEntity)))
+                .content(objectMapper.writeValueAsString(saved))
                 .header("Authorization", "Basic " + token))
                 .andDo(document("." + uri))
                 .andExpect(jsonPath("$.username").value(username))

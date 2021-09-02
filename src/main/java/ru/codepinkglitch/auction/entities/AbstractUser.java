@@ -15,13 +15,13 @@ public abstract class AbstractUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private BillingDetailsEntity billingDetails;
 
     @OneToMany
     private List<CommissionEntity> commissions;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private MyUserDetails userDetails;
 
     private String email;
