@@ -56,9 +56,7 @@ public class RegisterControllerTest {
     @Test
     public void newBuyer() throws Exception{
         BuyerIn buyerIn = new BuyerIn();
-        buyerIn.setId(1L);
         BillingDetailsIn billingDetailsIn = new BillingDetailsIn();
-        billingDetailsIn.setId(1L);
         billingDetailsIn.setName("Vasily Vasiliev");
         billingDetailsIn.setStreet("Pupkina");
         billingDetailsIn.setCity("Moscow");
@@ -71,8 +69,6 @@ public class RegisterControllerTest {
         buyerIn.setCommissionsIds(new ArrayList<>());
         buyerIn.setUsername("Vasily123");
         buyerIn.setPassword("123");
-        buyerIn.setName("Vasily");
-        buyerIn.setSurname("Vasiliev");
         buyerIn.setEmail("vasily@mail.su");
         buyerIn.setBidsIds(new ArrayList<>());
 
@@ -82,17 +78,15 @@ public class RegisterControllerTest {
                         .content(objectMapper.writeValueAsString(buyerIn)))
                 .andDo(document("." + uri))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.username").value("Vasily123"))
                 .andExpect(jsonPath("$.email").value("vasily@mail.su"));
     }
 
     @Test
-    @Ignore
     public void newArtist() throws Exception{
         ArtistIn artistIn = new ArtistIn();
         BillingDetailsIn billingDetailsIn = new BillingDetailsIn();
-        billingDetailsIn.setId(1L);
+        //billingDetailsIn.setId(1L);
         billingDetailsIn.setName("Petro Petrov");
         billingDetailsIn.setStreet("Pupkina");
         billingDetailsIn.setCity("Moscow");
@@ -103,11 +97,10 @@ public class RegisterControllerTest {
         billingDetailsIn.setCcCVV("111");
         artistIn.setBillingDetails(billingDetailsIn);
         artistIn.setDescription("default");
-        artistIn.setId(2L);
+        //artistIn.setId(2L);
         artistIn.setCommissionsIds(new ArrayList<>());
         artistIn.setUsername("Petro123");
         artistIn.setPassword("123");
-        artistIn.setName("Petro");
         artistIn.setEmail("petro@mail.su");
 
         String uri = "/register/artist";
@@ -116,7 +109,6 @@ public class RegisterControllerTest {
                 .content(objectMapper.writeValueAsString(artistIn)))
                 .andDo(document("." + uri))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.username").value("Petro123"))
                 .andExpect(jsonPath("$.email").value("petro@mail.su"));
     }

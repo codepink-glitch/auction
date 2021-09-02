@@ -41,8 +41,6 @@ public class Converter {
                 .map(Optional::get)
                 .collect(Collectors.toList()));
         buyerEntity.setUserDetails(new MyUserDetails(Arrays.asList(new MyAuthority(Role.BUYER.name())), buyer.getPassword(), buyer.getUsername()));
-        buyerEntity.setName(buyer.getName());
-        buyerEntity.setSurname(buyer.getName());
         buyerEntity.setEmail(buyer.getEmail());
         buyerEntity.setBillingDetails(detailsFromDto(buyer.getBillingDetails()));
         return buyerEntity;
@@ -63,8 +61,6 @@ public class Converter {
         );
         buyerIn.setUsername(buyer.getUserDetails().getUsername());
         buyerIn.setPassword(buyer.getUserDetails().getPassword());
-        buyerIn.setName(buyer.getName());
-        buyerIn.setSurname(buyer.getSurname());
         buyerIn.setEmail(buyer.getEmail());
         buyerIn.setBillingDetails(detailsToDto(buyer.getBillingDetails()));
         return buyerIn;
@@ -102,8 +98,6 @@ public class Converter {
         ArtistIn artistIn = new ArtistIn();
         artistIn.setId(artistEntity.getId());
         artistIn.setEmail(artistEntity.getEmail());
-        artistIn.setName(artistEntity.getName());
-        artistIn.setSurname(artistEntity.getSurname());
         artistIn.setBillingDetails(detailsToDto(artistEntity.getBillingDetails()));
         artistIn.setUsername(artistEntity.getUserDetails().getUsername());
         artistIn.setPassword(artistEntity.getUserDetails().getPassword());
@@ -119,8 +113,6 @@ public class Converter {
     public ArtistEntity artistFromDto(ArtistIn artistIn){
         ArtistEntity artistEntity = new ArtistEntity();
         artistEntity.setId(artistIn.getId());
-        artistEntity.setName(artistIn.getName());
-        artistEntity.setSurname(artistIn.getSurname());
         artistEntity.setEmail(artistIn.getEmail());
         artistEntity.setBillingDetails(detailsFromDto(artistIn.getBillingDetails()));
         artistEntity.setUserDetails(new MyUserDetails(Arrays.asList(new MyAuthority(Role.ARTIST.name())), artistIn.getPassword(), artistIn.getUsername()));

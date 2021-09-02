@@ -90,8 +90,6 @@ public class BuyerControllerTest {
             MyAuthority myAuthority = new MyAuthority();
             myAuthority.setAuthority(Role.BUYER.name());
             buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(myAuthority), password, username));
-            buyerEntity.setName("Vasily");
-            buyerEntity.setSurname("Vasiliev");
             buyerEntity.setEmail(email);
             id = buyerService.save(converter.buyerToDto(buyerEntity)).getId();
             setupIsDone = true;

@@ -88,8 +88,6 @@ public class ArtistControllerTest {
             MyAuthority myAuthority = new MyAuthority();
             myAuthority.setAuthority(Role.ARTIST.name());
             artistEntity.setUserDetails(new MyUserDetails(Collections.singletonList(myAuthority), password, username));
-            artistEntity.setName("Vasily");
-            artistEntity.setSurname("Vasiliev");
             artistEntity.setEmail(email);
             artistEntity.setDescription("default");
             artistService.save(converter.artistToDto(artistEntity));

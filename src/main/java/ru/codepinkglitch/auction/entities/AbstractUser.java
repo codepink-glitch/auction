@@ -2,7 +2,6 @@ package ru.codepinkglitch.auction.entities;
 
 import lombok.Data;
 import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 
 import javax.persistence.*;
 import java.util.List;
@@ -16,19 +15,15 @@ public abstract class AbstractUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @Cascade(CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     private BillingDetailsEntity billingDetails;
 
     @OneToMany
     private List<CommissionEntity> commissions;
 
-    @OneToOne
-    @Cascade(CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     private MyUserDetails userDetails;
 
-    private String name;
-    private String surname;
     private String email;
 
     public void update(AbstractUser abstractUser){
@@ -37,12 +32,6 @@ public abstract class AbstractUser {
         }
         if(userDetails != null) {
             this.userDetails = abstractUser.getUserDetails();
-        }
-        if(name != null) {
-            this.name = abstractUser.getName();
-        }
-        if(surname != null) {
-            this.surname = abstractUser.getSurname();
         }
         if(email != null) {
             this.email = abstractUser.getEmail();

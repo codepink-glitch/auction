@@ -13,8 +13,6 @@ public abstract class AbstractUserIn {
     private List<Long> commissionsIds;
     private String username;
     private String password;
-    private String name;
-    private String surname;
     private String email;
 
 }
