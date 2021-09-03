@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.*;
 import org.junit.jupiter.api.Order;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
+@FixMethodOrder(MethodSorters.JVM)
 public class ArtistControllerTest {
 
     @Autowired
@@ -52,7 +54,7 @@ public class ArtistControllerTest {
 
     MockMvc mockMvc;
     ArtistEntity artistEntity;
-    ArtistIn saved;
+    static ArtistIn saved;
     String username = "Vasily123";
     String password = "123";
     String email = "Vasily@mail.su";

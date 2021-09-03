@@ -1,14 +1,12 @@
 package ru.codepinkglitch.auction.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -36,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
-@TestMethodOrder(OrderAnnotation.class)
+@FixMethodOrder(MethodSorters.JVM)
 public class BuyerControllerTest {
 
     @Autowired
@@ -56,7 +54,7 @@ public class BuyerControllerTest {
 
     MockMvc mockMvc;
     BuyerEntity buyerEntity;
-    BuyerIn saved;
+    static BuyerIn saved;
     String username = "Vasily321";
     String password = "123";
     String email = "Vasily@mail.su";
@@ -101,7 +99,6 @@ public class BuyerControllerTest {
     }
 
     @Test
-    @Order(1)
     public void getBuyer() throws Exception{
         String uri = "/buyer/";
 
@@ -131,7 +128,6 @@ public class BuyerControllerTest {
     }
 
     @Test(expected = RuntimeException.class)
-    @Order(2)
     public void deleteBuyer() throws Exception{
         String uri = "/buyer";
 
