@@ -8,6 +8,7 @@ import ru.codepinkglitch.auction.dtos.in.CommissionIn;
 import ru.codepinkglitch.auction.dtos.in.CommissionWrapper;
 import ru.codepinkglitch.auction.dtos.out.CommissionOut;
 import ru.codepinkglitch.auction.entities.*;
+import ru.codepinkglitch.auction.exceptions.*;
 import ru.codepinkglitch.auction.repositories.*;
 
 import java.math.BigDecimal;
@@ -29,13 +30,13 @@ public class CommissionService {
         if (optional.isPresent()) {
             return converter.commissionToDto(optional.get());
         } else {
-            throw new RuntimeException("No such user.");
+            throw new UserDontExistException("No such user.");
         }
     }
 
     public CommissionIn save(CommissionIn commissionIn) {
         if (commissionIn == null) {
-            throw new RuntimeException("Can not save this commission.");
+            throw new EmptyCommissionException("Can not save this commission.");
         } else {
             CommissionEntity commission = converter.commissionFromDto(commissionIn);
             return converter.commissionToDto(commissionRepository.save(commission));
@@ -49,7 +50,7 @@ public class CommissionService {
         if(!filteredList.isEmpty()) {
             return filteredList;
         } else {
-            throw new RuntimeException("No such commissions.");
+            throw new CommissionDontExistException("No such commissions.");
         }
     }
 
@@ -57,7 +58,7 @@ public class CommissionService {
         if(commissionRepository.existsById(id)){
             commissionRepository.deleteById(id);
         } else {
-            throw new RuntimeException("No such commission.");
+            throw new CommissionDontExistException("No such commission.");
         }
     }
     public CommissionOut create(String name, CommissionWrapper commissionWrapper) {
@@ -95,12 +96,12 @@ public class CommissionService {
     public CommissionOut setBid(BigDecimal bid, Long commissionId, String name) {
         Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
         if(!optional.isPresent()) {
-            throw new RuntimeException("No such commission.");
+            throw new CommissionDontExistException("No such commission.");
         }
         CommissionEntity commissionEntity = optional.get();
         if(commissionEntity.getBids().stream()
                 .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST)).findFirst().orElseThrow(RuntimeException::new).getAmount().compareTo(bid) > 0){
-            throw new RuntimeException("You can not outbid with lower amount.");
+            throw new BidException("You can not outbid with lower amount.");
         }
         commissionEntity.getBids().stream()
                 .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
@@ -125,7 +126,7 @@ public class CommissionService {
             public void run() {
                 Optional<CommissionEntity> optional = commissionRepository.findById(id);
                 if(!optional.isPresent())
-                    throw new RuntimeException("Something went wrong with timer.");
+                    throw new TimerException("Can not close deleted commission.");
                 CommissionEntity commissionEntity = optional.get();
                 commissionEntity.setStatus(Status.CLOSED);
                 commissionEntity.getBids().stream()

@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.BuyerIn;
 import ru.codepinkglitch.auction.entities.*;
+import ru.codepinkglitch.auction.exceptions.UserAlreadyExistsException;
+import ru.codepinkglitch.auction.exceptions.UserDontExistException;
 import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 
@@ -41,7 +43,7 @@ public class BuyerService {
         billingDetails.setZip("default");
         buyer.setBillingDetails(billingDetails);
         buyer.setEmail("default");
-        List<MyAuthority> list = new ArrayList<>();
+        List<MyAuthority> list = Collections.emptyList();
         buyer.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())), "default", "default", 1L));
         buyer.setId(1L);
         buyerRepository.save(buyer);
@@ -49,7 +51,7 @@ public class BuyerService {
 
     public BuyerIn save(BuyerIn buyerIn){
         if(userDetailsRepository.existsMyUserDetailsByUsername(buyerIn.getUsername())){
-            throw new RuntimeException("User with such username already exists.");
+            throw new UserAlreadyExistsException("User with such username already exists.");
         } else {
             buyerIn.setPassword(bCryptPasswordEncoder.encode(buyerIn.getPassword()));
             return converter.buyerToDto(buyerRepository.save(converter.buyerFromDto(buyerIn)));
@@ -66,7 +68,7 @@ public class BuyerService {
     public void delete(String name) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(buyerEntity == null){
-            throw new RuntimeException("No such user.");
+            throw new UserDontExistException("No such user.");
         }
         buyerRepository.delete(buyerEntity);
     }
@@ -74,7 +76,7 @@ public class BuyerService {
     public BuyerIn find(String name) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(buyerEntity == null){
-            throw new RuntimeException("No such user.");
+            throw new UserDontExistException("No such user.");
         }
         return converter.buyerToDto(buyerEntity);
     }

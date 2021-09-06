@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
 import ru.codepinkglitch.auction.entities.ArtistEntity;
+import ru.codepinkglitch.auction.exceptions.UserAlreadyExistsException;
+import ru.codepinkglitch.auction.exceptions.UserDontExistException;
 import ru.codepinkglitch.auction.repositories.ArtistRepository;
 import ru.codepinkglitch.auction.repositories.BillingDetailsRepository;
 import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
@@ -26,7 +28,7 @@ public class ArtistService {
 
     public ArtistIn save(ArtistIn artist) {
         if(userDetailsRepository.existsMyUserDetailsByUsername(artist.getUsername())){
-            throw new RuntimeException("User with such username already exists.");
+            throw new UserAlreadyExistsException("User with such username already exists.");
         } else {
             artist.setPassword(bCryptPasswordEncoder.encode(artist.getPassword()));
             return converter.artistToDto(artistRepository.save(converter.artistFromDto(artist)));
@@ -43,7 +45,7 @@ public class ArtistService {
     public void delete(String name) {
         ArtistEntity artistEntity = artistRepository.findArtistEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(artistEntity == null){
-            throw new RuntimeException("No such user.");
+            throw new UserDontExistException("No such user.");
         }
         artistRepository.delete(artistEntity);
     }
@@ -51,7 +53,7 @@ public class ArtistService {
     public ArtistIn find(String name){
         ArtistEntity artistEntity = artistRepository.findArtistEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(artistEntity == null){
-            throw new RuntimeException("No such user.");
+            throw new UserDontExistException("No such user.");
         }
         return converter.artistToDto(artistEntity);
     }

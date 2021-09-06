@@ -22,7 +22,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.headers().frameOptions().disable();
+        http
+                .headers().frameOptions().disable();
         http
                 .csrf().disable()
                 .authorizeRequests()
