@@ -2,9 +2,6 @@ package ru.codepinkglitch.auction.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.*;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,17 +16,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.BuyerIn;
-import ru.codepinkglitch.auction.entities.*;
-import ru.codepinkglitch.auction.services.BuyerService;
-import ru.codepinkglitch.auction.services.MyUserDetailsService;
+import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
+import ru.codepinkglitch.auction.services.TestService;
 
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -44,22 +39,23 @@ public class BuyerControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
+    TestService testService;
+
+    @Autowired
     Converter converter;
 
     @Autowired
-    MyUserDetailsService myUserDetailsService;
+    UserDetailsRepository userDetailsRepository;
 
-    @Autowired
-    BuyerService buyerService;
 
     MockMvc mockMvc;
-    BuyerEntity buyerEntity;
-    static BuyerIn saved;
-    String username = "Vasily321";
-    String password = "123";
-    String email = "Vasily@mail.su";
-    String token = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
-    static boolean setupIsDone = false;
+    static BuyerIn savedEntity;
+    static boolean initIsDone = false;
+    static String email = "Vasily@mail.su";
+    static String username = "Vasily123";
+    static String password = "123";
+    static String token;
+    String uri = "/buyer/";
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("target/generated-snippets");
@@ -71,32 +67,13 @@ public class BuyerControllerTest {
                         .apply(documentationConfiguration(this.restDocumentation))
                         .apply(springSecurity());
         this.mockMvc = builder.build();
-        init();
-    }
-
-    private void init(){
-        if(!setupIsDone){
-            buyerEntity = new BuyerEntity();
-            BillingDetailsEntity billingDetailsEntity = new BillingDetailsEntity();
-            billingDetailsEntity.setName("Vasily Vasiliev");
-            billingDetailsEntity.setStreet("Pupkina");
-            billingDetailsEntity.setCity("Moscow");
-            billingDetailsEntity.setState("Moscow");
-            billingDetailsEntity.setZip("111111");
-            billingDetailsEntity.setCcNumber("1111 1111 1111 1111 1111");
-            billingDetailsEntity.setCcExpiration("10/22");
-            billingDetailsEntity.setCcCVV("111");
-            buyerEntity.setBillingDetails(billingDetailsEntity);
-            buyerEntity.setCommissions(new ArrayList<>());
-            buyerEntity.setBids(new ArrayList<>());
-            MyAuthority myAuthority = new MyAuthority();
-            myAuthority.setAuthority(Role.BUYER.name());
-            buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(myAuthority), password, username));
-            buyerEntity.setEmail(email);
-            saved = buyerService.save(converter.buyerToDto(buyerEntity));
-            setupIsDone = true;
+        if(!initIsDone) {
+            savedEntity = testService.initForBuyer(email, username, password);
+            token = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
+            initIsDone = true;
         }
     }
+
 
     @Test
     public void getBuyer() throws Exception{
@@ -113,31 +90,31 @@ public class BuyerControllerTest {
 
     @Test
     public void updateBuyer() throws Exception{
-        String uri = "/buyer/";
-        email = "VasilyNewMail@mail.ru";
-        saved.setEmail(email);
+        email = "vasily123@mail.ru";
+        savedEntity.setEmail(email);
 
         mockMvc.perform(MockMvcRequestBuilders.put(uri)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(saved))
+                .content(objectMapper.writeValueAsString(savedEntity))
                 .header("Authorization", "Basic " + token))
                 .andDo(document("." + uri))
+                .andDo(print())
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(status().isOk());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void deleteBuyer() throws Exception{
-        String uri = "/buyer";
 
         mockMvc.perform(MockMvcRequestBuilders.delete(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + token))
                 .andDo(document("." + uri))
+                .andDo(print())
                 .andExpect(content().string("Account deleted."))
                 .andExpect(status().isOk());
 
-        buyerService.find(username);
+        Assert.assertFalse(userDetailsRepository.existsMyUserDetailsByUsername(username));
     }
 }

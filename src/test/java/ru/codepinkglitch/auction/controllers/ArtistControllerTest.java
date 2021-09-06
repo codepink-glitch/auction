@@ -2,7 +2,6 @@ package ru.codepinkglitch.auction.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.*;
-import org.junit.jupiter.api.Order;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +16,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
-import ru.codepinkglitch.auction.entities.*;
-import ru.codepinkglitch.auction.services.ArtistService;
-import ru.codepinkglitch.auction.services.MyUserDetailsService;
+import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
+import ru.codepinkglitch.auction.services.TestService;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -47,19 +42,19 @@ public class ArtistControllerTest {
     Converter converter;
 
     @Autowired
-    ArtistService artistService;
+    TestService testService;
 
     @Autowired
-    MyUserDetailsService myUserDetailsService;
+    UserDetailsRepository userDetailsRepository;
 
     MockMvc mockMvc;
-    ArtistEntity artistEntity;
-    static ArtistIn saved;
-    String username = "Vasily123";
-    String password = "123";
-    String email = "Vasily@mail.su";
-    String token = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
-    static boolean setupIsDone = false;
+    static ArtistIn savedEntity;
+    static String email = "Petr@mail.su";
+    static String username = "Petr321";
+    static String password = "123";
+    static String token;
+    static boolean initIsDone = false;
+    String uri = "/artist/";
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("target/generated-snippets");
@@ -71,38 +66,17 @@ public class ArtistControllerTest {
                         .apply(documentationConfiguration(this.restDocumentation))
                         .apply(springSecurity());
         this.mockMvc = builder.build();
-        init();
+        if(!initIsDone){
+            savedEntity  = testService.initForArtist(email, username, password);
+            token = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
+            initIsDone = true;
     }
 
 
-    private void init() {
-        if(!setupIsDone) {
-            artistEntity = new ArtistEntity();
-            BillingDetailsEntity billingDetailsEntity = new BillingDetailsEntity();
-            billingDetailsEntity.setName("Vasily Vasiliev");
-            billingDetailsEntity.setStreet("Pupkina");
-            billingDetailsEntity.setCity("Moscow");
-            billingDetailsEntity.setState("Moscow");
-            billingDetailsEntity.setZip("111111");
-            billingDetailsEntity.setCcNumber("1111 1111 1111 1111 1111");
-            billingDetailsEntity.setCcExpiration("10/22");
-            billingDetailsEntity.setCcCVV("111");
-            artistEntity.setBillingDetails(billingDetailsEntity);
-            artistEntity.setCommissions(new ArrayList<>());
-            MyAuthority myAuthority = new MyAuthority();
-            myAuthority.setAuthority(Role.ARTIST.name());
-            artistEntity.setUserDetails(new MyUserDetails(Collections.singletonList(myAuthority), password, username));
-            artistEntity.setEmail(email);
-            artistEntity.setDescription("default");
-            saved = artistService.save(converter.artistToDto(artistEntity));
-            setupIsDone = true;
-        }
     }
 
     @Test
     public void getArtist() throws Exception{
-        String uri = "/artist/";
-
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Basic " + token))
@@ -115,13 +89,12 @@ public class ArtistControllerTest {
 
     @Test
     public void updateArtist() throws Exception{
-        String uri = "/artist/";
         email = "VasilyNewMail@mail.ru";
-        saved.setEmail(email);
+        savedEntity.setEmail(email);
 
         mockMvc.perform(MockMvcRequestBuilders.put(uri)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(saved))
+                .content(objectMapper.writeValueAsString(savedEntity))
                 .header("Authorization", "Basic " + token))
                 .andDo(document("." + uri))
                 .andExpect(jsonPath("$.username").value(username))
@@ -129,10 +102,8 @@ public class ArtistControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void deleteArtist() throws Exception{
-        String uri = "/artist/";
-
         mockMvc.perform(MockMvcRequestBuilders.delete(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + token))
@@ -140,6 +111,6 @@ public class ArtistControllerTest {
                 .andExpect(content().string("Account deleted."))
                 .andExpect(status().isOk());
 
-        artistService.find(username);
+        Assert.assertFalse(userDetailsRepository.existsMyUserDetailsByUsername(username));
     }
 }
