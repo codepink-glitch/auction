@@ -10,10 +10,9 @@ import ru.codepinkglitch.auction.entities.*;
 import ru.codepinkglitch.auction.repositories.BidRepository;
 import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.CommissionRepository;
-import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 
-import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -41,7 +40,7 @@ public class Converter {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList()));
-        buyerEntity.setUserDetails(new MyUserDetails(Arrays.asList(new MyAuthority(Role.BUYER.name())), buyer.getPassword(), buyer.getUsername(), buyer.getUserDetailsId()));
+        buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())), buyer.getPassword(), buyer.getUsername(), buyer.getUserDetailsId()));
         buyerEntity.setEmail(buyer.getEmail());
         buyerEntity.setBillingDetails(detailsFromDto(buyer.getBillingDetails()));
         return buyerEntity;
@@ -118,7 +117,7 @@ public class Converter {
         artistEntity.setId(artistIn.getId());
         artistEntity.setEmail(artistIn.getEmail());
         artistEntity.setBillingDetails(detailsFromDto(artistIn.getBillingDetails()));
-        artistEntity.setUserDetails(new MyUserDetails(Arrays.asList(new MyAuthority(Role.ARTIST.name())), artistIn.getPassword(), artistIn.getUsername(), artistIn.getUserDetailsId()));
+        artistEntity.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.ARTIST.name())), artistIn.getPassword(), artistIn.getUsername(), artistIn.getUserDetailsId()));
         artistEntity.setCommissions(artistIn.getCommissionsIds()
                 .stream()
                 .map(commissionRepository::findById)

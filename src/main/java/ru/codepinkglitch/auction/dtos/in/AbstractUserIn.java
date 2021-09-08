@@ -1,6 +1,5 @@
 package ru.codepinkglitch.auction.dtos.in;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;

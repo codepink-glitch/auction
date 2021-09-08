@@ -31,4 +31,8 @@ public class CommissionEntity {
     @OneToMany
     @Cascade(CascadeType.ALL)
     private List<BidEntity> bids;
+
+    //TODO 2 pics
+    //TODO tag class
+    //TODO calendar to localdatetime
 }
