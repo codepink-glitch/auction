@@ -18,8 +18,6 @@ public abstract class AbstractUser {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private BillingDetailsEntity billingDetails;
 
-    @OneToMany
-    private List<CommissionEntity> commissions;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private MyUserDetails userDetails;

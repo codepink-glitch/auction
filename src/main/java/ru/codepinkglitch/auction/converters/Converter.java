@@ -1,6 +1,8 @@
 package ru.codepinkglitch.auction.converters;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import ru.codepinkglitch.auction.dtos.in.*;
 import ru.codepinkglitch.auction.dtos.out.ArtistOut;
@@ -24,6 +26,7 @@ public class Converter {
     private final BidRepository bidRepository;
     private final CommissionRepository commissionRepository;
     private final BuyerRepository buyerRepository;
+    private final ObjectMapper objectMapper;
 
     public BuyerEntity buyerFromDto(BuyerIn buyer){
         BuyerEntity buyerEntity = new BuyerEntity();
@@ -34,12 +37,6 @@ public class Converter {
                 .collect(Collectors.toList())
         );
         buyerEntity.setId(buyer.getId());
-        buyerEntity.setCommissions(buyer.getCommissionsIds()
-                .stream()
-                .map(commissionRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList()));
         buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())), buyer.getPassword(), buyer.getUsername(), buyer.getUserDetailsId()));
         buyerEntity.setEmail(buyer.getEmail());
         buyerEntity.setBillingDetails(detailsFromDto(buyer.getBillingDetails()));
@@ -54,11 +51,6 @@ public class Converter {
                 .collect(Collectors.toList())
         );
         buyerIn.setId(buyer.getId());
-        buyerIn.setCommissionsIds(buyer.getCommissions()
-                .stream()
-                .map(CommissionEntity::getId)
-                .collect(Collectors.toList())
-        );
         buyerIn.setUsername(buyer.getUserDetails().getUsername());
         buyerIn.setPassword(buyer.getUserDetails().getPassword());
         buyerIn.setUserDetailsId(buyer.getUserDetails().getId());
@@ -67,32 +59,16 @@ public class Converter {
         return buyerIn;
     }
 
+    @SneakyThrows
     public BillingDetailsIn detailsToDto(BillingDetailsEntity billingDetailsEntity){
-        BillingDetailsIn billingDetailsIn = new BillingDetailsIn();
-        billingDetailsIn.setId(billingDetailsEntity.getId());
-        billingDetailsIn.setName(billingDetailsEntity.getName());
-        billingDetailsIn.setStreet(billingDetailsEntity.getStreet());
-        billingDetailsIn.setCity(billingDetailsEntity.getCity());
-        billingDetailsIn.setState(billingDetailsEntity.getState());
-        billingDetailsIn.setZip(billingDetailsEntity.getZip());
-        billingDetailsIn.setCcNumber(billingDetailsEntity.getCcNumber());
-        billingDetailsIn.setCcExpiration(billingDetailsEntity.getCcExpiration());
-        billingDetailsIn.setCcCVV(billingDetailsEntity.getCcCVV());
-        return billingDetailsIn;
+        String detailsJsonString = objectMapper.writeValueAsString(billingDetailsEntity);
+        return objectMapper.readValue(detailsJsonString, BillingDetailsIn.class);
     }
 
+    @SneakyThrows
     public BillingDetailsEntity detailsFromDto(BillingDetailsIn billingDetailsIn){
-        BillingDetailsEntity billingDetails = new BillingDetailsEntity();
-        billingDetails.setId(billingDetailsIn.getId());
-        billingDetails.setName(billingDetailsIn.getName());
-        billingDetails.setStreet(billingDetailsIn.getStreet());
-        billingDetails.setCity(billingDetailsIn.getCity());
-        billingDetails.setState(billingDetailsIn.getState());
-        billingDetails.setZip(billingDetailsIn.getZip());
-        billingDetails.setCcNumber(billingDetailsIn.getCcNumber());
-        billingDetails.setCcExpiration(billingDetailsIn.getCcExpiration());
-        billingDetails.setCcCVV(billingDetailsIn.getCcCVV());
-        return billingDetails;
+        String detailsJsonString = objectMapper.writeValueAsString(billingDetailsIn);
+        return objectMapper.readValue(detailsJsonString, BillingDetailsEntity.class);
     }
 
     public ArtistIn artistToDto(ArtistEntity artistEntity){

@@ -35,4 +35,5 @@ public class CommissionEntity {
     //TODO 2 pics
     //TODO tag class
     //TODO calendar to localdatetime
+    //TODO creation of localdatetime not with only date but with time (hours, minutes)
 }

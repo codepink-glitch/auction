@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
+import ru.codepinkglitch.auction.dtos.in.CommissionIn;
+import ru.codepinkglitch.auction.dtos.out.CommissionOut;
 import ru.codepinkglitch.auction.entities.ArtistEntity;
+import ru.codepinkglitch.auction.entities.Status;
 import ru.codepinkglitch.auction.exceptions.UserAlreadyExistsException;
 import ru.codepinkglitch.auction.exceptions.UserDontExistException;
 import ru.codepinkglitch.auction.repositories.ArtistRepository;
@@ -14,6 +17,7 @@ import ru.codepinkglitch.auction.repositories.BillingDetailsRepository;
 import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -56,5 +60,27 @@ public class ArtistService {
             throw new UserDontExistException("No such user.");
         }
         return converter.artistToDto(artistEntity);
+    }
+
+    public List<CommissionIn> getCommissions(String name) {
+        ArtistEntity artistEntity = artistRepository.findArtistEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
+        if(artistEntity == null){
+            throw new UserDontExistException("No such user.");
+        }
+        return artistEntity.getCommissions().stream()
+                .map(converter::commissionToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<CommissionOut> getSoldCommissions(String name) {
+        ArtistEntity artistEntity = artistRepository.findArtistEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
+        if(artistEntity == null){
+            throw new UserDontExistException("No such user.");
+        }
+        return artistEntity.getCommissions().stream()
+                .filter(x -> x.getStatus().equals(Status.CLOSED))
+                .map(converter::commissionToOut)
+                .filter(x -> !x.getBid().getBuyerUsername().equals("default"))
+                .collect(Collectors.toList());
     }
 }

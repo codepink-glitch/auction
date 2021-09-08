@@ -5,6 +5,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.codepinkglitch.auction.converters.Converter;
+import ru.codepinkglitch.auction.dtos.in.BidIn;
 import ru.codepinkglitch.auction.dtos.in.BuyerIn;
 import ru.codepinkglitch.auction.entities.*;
 import ru.codepinkglitch.auction.exceptions.UserAlreadyExistsException;
@@ -16,6 +17,7 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -26,12 +28,12 @@ public class BuyerService {
     private final UserDetailsRepository userDetailsRepository;
     private final Converter converter;
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    private final static String NO_USER_MESSAGE = "No such user.";
 
     @PostConstruct
     private void postConstruct(){
         BuyerEntity buyer = new BuyerEntity();
         buyer.setBids(new ArrayList<>());
-        buyer.setCommissions(new ArrayList<>());
         BillingDetailsEntity billingDetails = new BillingDetailsEntity();
         billingDetails.setCcCVV("default");
         billingDetails.setCcExpiration("default");
@@ -68,7 +70,7 @@ public class BuyerService {
     public void delete(String name) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(buyerEntity == null){
-            throw new UserDontExistException("No such user.");
+            throw new UserDontExistException(NO_USER_MESSAGE);
         }
         buyerRepository.delete(buyerEntity);
     }
@@ -76,8 +78,29 @@ public class BuyerService {
     public BuyerIn find(String name) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(buyerEntity == null){
-            throw new UserDontExistException("No such user.");
+            throw new UserDontExistException(NO_USER_MESSAGE);
         }
         return converter.buyerToDto(buyerEntity);
+    }
+
+    public List<BidIn> getBids(String name) {
+        BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
+        if(buyerEntity == null){
+            throw new UserDontExistException(NO_USER_MESSAGE);
+        }
+        return buyerEntity.getBids().stream()
+                .map(converter::bidToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<BidIn> getWonBids(String name) {
+        BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
+        if(buyerEntity == null){
+            throw new UserDontExistException(NO_USER_MESSAGE);
+        }
+        return buyerEntity.getBids().stream()
+                .filter(x -> x.getBidStatus().equals(BidStatus.WON))
+                .map(converter::bidToDto)
+                .collect(Collectors.toList());
     }
 }

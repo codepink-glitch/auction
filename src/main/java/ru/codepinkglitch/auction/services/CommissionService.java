@@ -132,7 +132,7 @@ public class CommissionService {
                 commissionEntity.getBids().stream()
                         .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
                         .findFirst()
-                        .orElseThrow(RuntimeException::new)
+                        .orElseThrow(TimerException::new)
                         .setBidStatus(BidStatus.WON);
             }
         };

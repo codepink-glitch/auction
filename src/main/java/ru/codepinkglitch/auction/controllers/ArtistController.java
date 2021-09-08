@@ -6,7 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
+import ru.codepinkglitch.auction.dtos.in.CommissionIn;
+import ru.codepinkglitch.auction.dtos.out.CommissionOut;
 import ru.codepinkglitch.auction.services.ArtistService;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,5 +33,15 @@ public class ArtistController {
     @GetMapping
     public ResponseEntity<ArtistIn> getArtist(){
         return new ResponseEntity<>(artistService.find(SecurityContextHolder.getContext().getAuthentication().getName()), HttpStatus.OK);
+    }
+
+    @GetMapping("/commissions")
+    public ResponseEntity<List<CommissionIn>> getCommissions(){
+        return new ResponseEntity<>(artistService.getCommissions(SecurityContextHolder.getContext().getAuthentication().getName()), HttpStatus.OK);
+    }
+
+    @GetMapping("/commissions/sold")
+    public ResponseEntity<List<CommissionOut>> getSoldCommissions(){
+        return new ResponseEntity<>(artistService.getSoldCommissions(SecurityContextHolder.getContext().getAuthentication().getName()), HttpStatus.OK);
     }
 }
