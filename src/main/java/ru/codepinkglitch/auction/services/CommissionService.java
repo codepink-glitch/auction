@@ -1,6 +1,7 @@
 package ru.codepinkglitch.auction.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.codepinkglitch.auction.converters.Converter;
@@ -10,6 +11,7 @@ import ru.codepinkglitch.auction.dtos.out.CommissionOut;
 import ru.codepinkglitch.auction.entities.*;
 import ru.codepinkglitch.auction.exceptions.*;
 import ru.codepinkglitch.auction.repositories.*;
+import ru.codepinkglitch.auction.runnables.RunnableTask;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,6 +28,7 @@ public class CommissionService {
     private final BuyerRepository buyerRepository;
     private final UserDetailsRepository userDetailsRepository;
     private final Converter converter;
+    private final TaskScheduler taskScheduler;
 
     public CommissionIn findById(Long id) {
         Optional<CommissionEntity> optional = commissionRepository.findById(id);
@@ -63,6 +66,8 @@ public class CommissionService {
             throw new CommissionDontExistException("No such commission.");
         }
     }
+
+    @Transactional
     public CommissionOut create(String name, CommissionWrapper commissionWrapper) {
         CommissionEntity commission = new CommissionEntity();
         commission.setStatus(Status.OPEN);
@@ -84,8 +89,7 @@ public class CommissionService {
         bidEntity.setCommission(commission);
         commission.setBids(Arrays.asList(bidEntity));
         CommissionOut commissionOut = converter.commissionToOut(commissionRepository.save(commission));
-        Timer timer = new Timer();
-        timer.schedule(scheduleClosing(commissionOut.getId()),
+        taskScheduler.schedule(new RunnableTask(commissionOut.getId(), commissionRepository),
                 Date.from(commission.getClosingDate().atZone(ZoneId.systemDefault()).toInstant()));
         return commissionOut;
     }
@@ -122,21 +126,5 @@ public class CommissionService {
                         ));
         commissionEntity.getBids().add(bidEntity);
         return converter.commissionToOut(commissionRepository.save(commissionEntity));
-    }
-
-    private TimerTask scheduleClosing(Long id){
-        return new TimerTask() {
-            @Override
-            public void run() {
-                CommissionEntity commissionEntity = commissionRepository.findById(id).orElseThrow(TimerException::new);
-                commissionEntity.setStatus(Status.CLOSED);
-                commissionEntity.getBids().stream()
-                        .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
-                        .findFirst()
-                        .orElseThrow(TimerException::new)
-                        .setBidStatus(BidStatus.WON);
-                commissionRepository.save(commissionEntity);
-            }
-        };
     }
 }

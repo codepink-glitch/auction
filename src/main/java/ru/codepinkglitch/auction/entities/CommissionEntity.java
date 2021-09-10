@@ -3,6 +3,8 @@ package ru.codepinkglitch.auction.entities;
 import lombok.Data;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -29,7 +31,8 @@ public class CommissionEntity {
     @OneToOne
     private ArtistEntity author;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
+    @Fetch(value = FetchMode.SUBSELECT)
     @Cascade(CascadeType.ALL)
     private List<BidEntity> bids;
 

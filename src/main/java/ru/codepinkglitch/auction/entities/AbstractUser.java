@@ -1,10 +1,8 @@
 package ru.codepinkglitch.auction.entities;
 
 import lombok.Data;
-import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Data
 @MappedSuperclass
@@ -24,6 +22,7 @@ public abstract class AbstractUser {
 
     private String email;
 
+    // TODO: 9/9/2021 remove logic use repositories
     public void update(AbstractUser abstractUser){
         if(billingDetails != null) {
             this.billingDetails = abstractUser.getBillingDetails();

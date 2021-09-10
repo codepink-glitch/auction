@@ -2,7 +2,6 @@ package ru.codepinkglitch.auction.converters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import ru.codepinkglitch.auction.dtos.in.*;
 import ru.codepinkglitch.auction.dtos.out.ArtistOut;
@@ -27,18 +26,20 @@ public class Converter {
     private final CommissionRepository commissionRepository;
     private final BuyerRepository buyerRepository;
     private final ObjectMapper objectMapper;
-    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public BuyerEntity buyerFromDto(BuyerIn buyer){
         BuyerEntity buyerEntity = new BuyerEntity();
         buyerEntity.setBids(buyer.getBidsIds().stream()
+                // TODO: 9/9/2021 get all by 1 sql request
                 .map(bidRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList())
         );
         buyerEntity.setId(buyer.getId());
-        buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())), buyer.getPassword(), buyer.getUsername(), buyer.getUserDetailsId()));
+        buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())),
+                buyer.getPassword(), buyer.getUsername(), buyer.getUserDetailsId()));
         buyerEntity.setEmail(buyer.getEmail());
         buyerEntity.setBillingDetails(detailsFromDto(buyer.getBillingDetails()));
         return buyerEntity;
@@ -60,16 +61,14 @@ public class Converter {
         return buyerIn;
     }
 
-    @SneakyThrows
+
     public BillingDetailsIn detailsToDto(BillingDetailsEntity billingDetailsEntity){
-        String detailsJsonString = objectMapper.writeValueAsString(billingDetailsEntity);
-        return objectMapper.readValue(detailsJsonString, BillingDetailsIn.class);
+        return objectMapper.convertValue(billingDetailsEntity, BillingDetailsIn.class);
     }
 
-    @SneakyThrows
+
     public BillingDetailsEntity detailsFromDto(BillingDetailsIn billingDetailsIn){
-        String detailsJsonString = objectMapper.writeValueAsString(billingDetailsIn);
-        return objectMapper.readValue(detailsJsonString, BillingDetailsEntity.class);
+        return objectMapper.convertValue(billingDetailsIn, BillingDetailsEntity.class);
     }
 
     public ArtistIn artistToDto(ArtistEntity artistEntity){
@@ -165,8 +164,9 @@ public class Converter {
         commissionOut.setUri(commissionEntity.getUri());
         commissionOut.setTags(commissionEntity.getTags());
         commissionOut.setAuthor(artistToOut(commissionEntity.getAuthor()));
+        // TODO: 9/9/2021 remove split business and mapping
         commissionOut.setBid(bidToOut(commissionEntity.getBids().stream()
-                .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
+                .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST) || x.getBidStatus().equals(BidStatus.WON))
                 .findFirst()
                 .orElseThrow(RuntimeException::new)));
         return commissionOut;

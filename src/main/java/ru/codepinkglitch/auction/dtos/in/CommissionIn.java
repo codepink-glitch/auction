@@ -4,7 +4,6 @@ import lombok.Data;
 import ru.codepinkglitch.auction.entities.Status;
 
 import java.time.LocalDateTime;
-import java.util.Calendar;
 import java.util.List;
 
 @Data
@@ -19,6 +18,7 @@ public class CommissionIn {
     private ArtistIn author;
     private List<BidIn> bids;
 
+    // TODO: 9/9/2021 remove
     public void update(CommissionIn commissionIn){
         if(commissionIn.getId() != null)
             this.id = commissionIn.getId();
