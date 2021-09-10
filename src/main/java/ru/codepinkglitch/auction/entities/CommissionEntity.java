@@ -5,6 +5,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -18,8 +19,8 @@ public class CommissionEntity {
     private Long id;
 
     private Status status;
-    private Calendar publishDate;
-    private Calendar closingDate;
+    private LocalDateTime publishDate;
+    private LocalDateTime closingDate;
     private String uri;
 
     @ElementCollection
@@ -34,6 +35,4 @@ public class CommissionEntity {
 
     //TODO 2 pics
     //TODO tag class
-    //TODO calendar to localdatetime
-    //TODO creation of localdatetime not with only date but with time (hours, minutes)
 }

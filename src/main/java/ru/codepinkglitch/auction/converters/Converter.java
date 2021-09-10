@@ -13,7 +13,7 @@ import ru.codepinkglitch.auction.repositories.BidRepository;
 import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.CommissionRepository;
 
-import java.util.Calendar;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,6 +27,7 @@ public class Converter {
     private final CommissionRepository commissionRepository;
     private final BuyerRepository buyerRepository;
     private final ObjectMapper objectMapper;
+    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public BuyerEntity buyerFromDto(BuyerIn buyer){
         BuyerEntity buyerEntity = new BuyerEntity();
@@ -159,16 +160,8 @@ public class Converter {
         CommissionOut commissionOut = new CommissionOut();
         commissionOut.setId(commissionEntity.getId());
         commissionOut.setStatus(commissionEntity.getStatus());
-        commissionOut.setPublishDate(commissionEntity.getPublishDate().get(Calendar.DAY_OF_MONTH)
-                + "." + (commissionEntity.getPublishDate().get(Calendar.MONTH) + 1)
-                + "." + commissionEntity.getPublishDate().get(Calendar.YEAR)
-                + " " + commissionEntity.getPublishDate().get(Calendar.HOUR_OF_DAY)
-                + ":" + commissionEntity.getPublishDate().get(Calendar.MINUTE));
-        commissionOut.setClosingDate(commissionEntity.getClosingDate().get(Calendar.DAY_OF_MONTH)
-                + "." + (commissionEntity.getClosingDate().get(Calendar.MONTH) + 1)
-                + "." + commissionEntity.getClosingDate().get(Calendar.YEAR)
-                + " " + commissionEntity.getClosingDate().get(Calendar.HOUR_OF_DAY)
-                + ":" + commissionEntity.getClosingDate().get(Calendar.MINUTE));
+        commissionOut.setPublishDate(commissionEntity.getPublishDate().format(formatter));
+        commissionOut.setClosingDate(commissionEntity.getClosingDate().format(formatter));
         commissionOut.setUri(commissionEntity.getUri());
         commissionOut.setTags(commissionEntity.getTags());
         commissionOut.setAuthor(artistToOut(commissionEntity.getAuthor()));

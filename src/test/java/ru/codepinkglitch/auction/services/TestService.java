@@ -41,7 +41,6 @@ public class TestService {
     public BuyerIn initForBuyer(String email, String username, String password){
             BuyerEntity buyerEntity = new BuyerEntity();
             buyerEntity.setBillingDetails(billingDetailsEntity);
-            buyerEntity.setCommissions(new ArrayList<>());
             buyerEntity.setBids(new ArrayList<>());
             MyAuthority myAuthority = new MyAuthority();
             myAuthority.setAuthority(Role.BUYER.name());

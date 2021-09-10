@@ -86,7 +86,9 @@ public class MainControllerTest {
         String uri = "/main/";
 
         CommissionWrapper commissionWrapper = new CommissionWrapper();
-        commissionWrapper.setPeriod(1);
+        commissionWrapper.setDaysPeriod(1);
+        commissionWrapper.setHoursPeriod(1);
+        commissionWrapper.setMinutesPeriod(1);
         commissionWrapper.setTags(Arrays.asList("Character", "Cyberpunk"));
         commissionWrapper.setMinimalBid(minimalBid);
         String commissionUri = "https://www.some_hosting.su/cyberpunk_art#666";

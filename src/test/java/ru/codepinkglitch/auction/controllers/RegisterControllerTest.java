@@ -66,7 +66,6 @@ public class RegisterControllerTest {
         billingDetailsIn.setCcExpiration("10/21");
         billingDetailsIn.setCcCVV("111");
         buyerIn.setBillingDetails(billingDetailsIn);
-        buyerIn.setCommissionsIds(new ArrayList<>());
         buyerIn.setUsername("Vasily123");
         buyerIn.setPassword("123");
         buyerIn.setEmail("vasily@mail.su");

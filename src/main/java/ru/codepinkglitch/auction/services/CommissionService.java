@@ -12,6 +12,8 @@ import ru.codepinkglitch.auction.exceptions.*;
 import ru.codepinkglitch.auction.repositories.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,10 +66,11 @@ public class CommissionService {
     public CommissionOut create(String name, CommissionWrapper commissionWrapper) {
         CommissionEntity commission = new CommissionEntity();
         commission.setStatus(Status.OPEN);
-        commission.setPublishDate(Calendar.getInstance());
-        Calendar instance = Calendar.getInstance();
-        instance.add(Calendar.DATE, commissionWrapper.getPeriod());
-        commission.setClosingDate(instance);
+        commission.setPublishDate(LocalDateTime.now());
+        commission.setClosingDate(LocalDateTime.now()
+                .plusMinutes(commissionWrapper.getMinutesPeriod())
+                .plusHours(commissionWrapper.getHoursPeriod())
+                .plusDays(commissionWrapper.getDaysPeriod()));
         commission.setUri(commissionWrapper.getUri());
         commission.setTags(commissionWrapper.getTags());
         commission.setAuthor(
@@ -82,7 +85,8 @@ public class CommissionService {
         commission.setBids(Arrays.asList(bidEntity));
         CommissionOut commissionOut = converter.commissionToOut(commissionRepository.save(commission));
         Timer timer = new Timer();
-        timer.schedule(scheduleClosing(commissionOut.getId()), commission.getClosingDate().getTime());
+        timer.schedule(scheduleClosing(commissionOut.getId()),
+                Date.from(commission.getClosingDate().atZone(ZoneId.systemDefault()).toInstant()));
         return commissionOut;
     }
 
@@ -124,16 +128,14 @@ public class CommissionService {
         return new TimerTask() {
             @Override
             public void run() {
-                Optional<CommissionEntity> optional = commissionRepository.findById(id);
-                if(!optional.isPresent())
-                    throw new TimerException("Can not close deleted commission.");
-                CommissionEntity commissionEntity = optional.get();
+                CommissionEntity commissionEntity = commissionRepository.findById(id).orElseThrow(TimerException::new);
                 commissionEntity.setStatus(Status.CLOSED);
                 commissionEntity.getBids().stream()
                         .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
                         .findFirst()
                         .orElseThrow(TimerException::new)
                         .setBidStatus(BidStatus.WON);
+                commissionRepository.save(commissionEntity);
             }
         };
     }

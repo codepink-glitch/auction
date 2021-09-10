@@ -3,6 +3,7 @@ package ru.codepinkglitch.auction.dtos.in;
 import lombok.Data;
 import ru.codepinkglitch.auction.entities.Status;
 
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.List;
 
@@ -11,8 +12,8 @@ public class CommissionIn {
 
     private Long id;
     private Status status;
-    private Calendar publishDate;
-    private Calendar closingDate;
+    private LocalDateTime publishDate;
+    private LocalDateTime closingDate;
     private String uri;
     private List<String> tags;
     private ArtistIn author;
