@@ -42,5 +42,10 @@ public class MainController {
         return new ResponseEntity<>(commissionService.setBid(bid, commissionId, SecurityContextHolder.getContext().getAuthentication().getName()), HttpStatus.OK);
     }
 
+    @PostMapping("/image/{id}")
+    public ResponseEntity<String> setImage(@RequestParam Long commissionId, @RequestBody MultipartFile multipartFile){
+        //commissionService.attachImage(commissionId, multipartFile, SecurityContextHolder.getContext().getAuthentication().getName())
+        return new ResponseEntity<>("Image attached.", HttpStatus.OK);
+    }
 
 }
