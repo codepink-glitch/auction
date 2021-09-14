@@ -128,7 +128,7 @@ public class Converter {
         commissionIn.setStatus(commissionEntity.getStatus());
         commissionIn.setPublishDate(commissionEntity.getPublishDate());
         commissionIn.setClosingDate(commissionEntity.getClosingDate());
-        commissionIn.setUri(commissionEntity.getUri());
+        commissionIn.setUri(commissionEntity.getPreviewPicture());
         commissionIn.setTags(commissionEntity.getTags());
         commissionIn.setAuthor(artistToDto(commissionEntity.getAuthor()));
         commissionIn.setBids(commissionEntity.getBids().stream()
@@ -143,7 +143,7 @@ public class Converter {
         commissionEntity.setStatus(commissionIn.getStatus());
         commissionEntity.setPublishDate(commissionIn.getPublishDate());
         commissionEntity.setClosingDate(commissionIn.getClosingDate());
-        commissionEntity.setUri(commissionIn.getUri());
+        commissionEntity.setPreviewPicture(commissionIn.getUri());
         commissionEntity.setTags(commissionIn.getTags());
         commissionEntity.setAuthor(artistFromDto(commissionIn.getAuthor()));
         commissionEntity.setBids(commissionIn.getBids().stream()
@@ -158,7 +158,7 @@ public class Converter {
         commissionOut.setStatus(commissionEntity.getStatus());
         commissionOut.setPublishDate(commissionEntity.getPublishDate().format(formatter));
         commissionOut.setClosingDate(commissionEntity.getClosingDate().format(formatter));
-        commissionOut.setUri(commissionEntity.getUri());
+        commissionOut.setUri(commissionEntity.getPreviewPicture());
         commissionOut.setTags(commissionEntity.getTags());
         commissionOut.setAuthor(artistToOut(commissionEntity.getAuthor()));
         // TODO: 9/9/2021 remove split business and mapping

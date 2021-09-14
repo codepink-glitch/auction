@@ -23,7 +23,12 @@ public class CommissionEntity {
     private Status status;
     private LocalDateTime publishDate;
     private LocalDateTime closingDate;
-    private String uri;
+
+    @Lob
+    private String previewPicture;
+
+    @Lob
+    private String finishedPicture;
 
     @ElementCollection
     private List<String> tags = new ArrayList<>();

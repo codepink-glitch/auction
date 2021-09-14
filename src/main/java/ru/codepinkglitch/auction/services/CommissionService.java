@@ -17,6 +17,7 @@ import ru.codepinkglitch.auction.exceptions.*;
 import ru.codepinkglitch.auction.repositories.*;
 import ru.codepinkglitch.auction.runnables.RunnableTask;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -80,7 +81,7 @@ public class CommissionService {
                 .plusMinutes(commissionWrapper.getMinutesPeriod())
                 .plusHours(commissionWrapper.getHoursPeriod())
                 .plusDays(commissionWrapper.getDaysPeriod()));
-        commission.setUri(commissionWrapper.getUri());
+        commission.setPreviewPicture(commissionWrapper.getUri());
         commission.setTags(commissionWrapper.getTags());
         commission.setAuthor(
                 artistRepository.findArtistEntityByUserDetails(
@@ -136,4 +137,74 @@ public class CommissionService {
         return converter.commissionToOut(commissionRepository.save(commissionEntity));
     }
 
+
+    public void attachImage(Long commissionId, MultipartFile multipartFile, String name){
+        Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
+        if(!optional.isPresent()){
+            throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
+        }
+        CommissionEntity commissionEntity = optional.get();
+        if(!commissionEntity.getAuthor().getUserDetails().getUsername().equals(name)){
+            throw new ServiceException(ExceptionEnum.ACCESS_EXCEPTION);
+        }
+        try {
+            commissionEntity.setPreviewPicture(Base64.getEncoder().encodeToString(multipartFile.getBytes()));
+            commissionRepository.save(commissionEntity);
+        } catch(IOException e){
+            throw new ServiceException(ExceptionEnum.PICTURE_EXCEPTION);
+        }
+
+    }
+
+    public byte[] getPreview(Long commissionId) {
+        Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
+        if(!optional.isPresent()){
+            throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
+        }
+        CommissionEntity commissionEntity = optional.get();
+        if(commissionEntity.getPreviewPicture() == null){
+            throw new ServiceException(ExceptionEnum.PICTURE_EXCEPTION);
+        }
+        return Base64.getDecoder().decode(commissionEntity.getPreviewPicture());
+    }
+
+    public void attachFinishedImage(Long commissionId, MultipartFile multipartFile, String name) {
+        Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
+        if(!optional.isPresent()){
+            throw new ServiceException(ExceptionEnum.PICTURE_EXCEPTION);
+        }
+        CommissionEntity commissionEntity = optional.get();
+        if(!commissionEntity.getAuthor().getUserDetails().getUsername().equals(name)){
+            throw new ServiceException(ExceptionEnum.ACCESS_EXCEPTION);
+        }
+        try {
+            commissionEntity.setFinishedPicture(Base64.getEncoder().encodeToString(multipartFile.getBytes()));
+            commissionRepository.save(commissionEntity);
+        } catch(IOException e) {
+            throw new ServiceException(ExceptionEnum.PICTURE_EXCEPTION);
+        }
+
+    }
+
+    public byte[] getFinishedImage(Long commissionId, String name) {
+        Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
+        if(!optional.isPresent()){
+            throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
+        }
+        CommissionEntity commissionEntity = optional.get();
+        if(commissionEntity.getStatus().equals(Status.OPEN)){
+            throw new ServiceException(ExceptionEnum.COMMISSION_NOT_OVER_EXCEPTION);
+        }
+        BidEntity bidEntity = commissionEntity.getBids().stream()
+                .filter(x -> x.getBidStatus().equals(BidStatus.WON))
+                .findFirst()
+                .orElseThrow(RuntimeException::new);
+        if(!bidEntity.getBuyer().getUserDetails().getUsername().equals(name)){
+            throw new ServiceException(ExceptionEnum.ACCESS_EXCEPTION);
+        }
+        if(commissionEntity.getFinishedPicture() == null){
+            throw new ServiceException(ExceptionEnum.PICTURE_EXCEPTION);
+        }
+        return Base64.getDecoder().decode(commissionEntity.getFinishedPicture());
+    }
 }

@@ -2,6 +2,7 @@ package ru.codepinkglitch.auction.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -42,10 +43,27 @@ public class MainController {
         return new ResponseEntity<>(commissionService.setBid(bid, commissionId, SecurityContextHolder.getContext().getAuthentication().getName()), HttpStatus.OK);
     }
 
-    @PostMapping("/image/{id}")
-    public ResponseEntity<String> setImage(@RequestParam Long commissionId, @RequestBody MultipartFile multipartFile){
-        //commissionService.attachImage(commissionId, multipartFile, SecurityContextHolder.getContext().getAuthentication().getName())
+    @PostMapping("/image")
+    public ResponseEntity<String> setImage(@RequestParam Long commissionId, @RequestParam("file") MultipartFile multipartFile){
+        commissionService.attachImage(commissionId, multipartFile, SecurityContextHolder.getContext().getAuthentication().getName());
         return new ResponseEntity<>("Image attached.", HttpStatus.OK);
     }
+
+    @GetMapping(value = "/preview", produces = MediaType.IMAGE_JPEG_VALUE)
+    public @ResponseBody byte[] getPreview(@RequestParam Long commissionId){
+        return commissionService.getPreview(commissionId);
+    }
+
+    @PostMapping("/finishedImage")
+    public ResponseEntity<String> setFinishedImage(@RequestParam Long commissionId, @RequestParam("file") MultipartFile multipartFile){
+        commissionService.attachFinishedImage(commissionId, multipartFile, SecurityContextHolder.getContext().getAuthentication().getName());
+        return new ResponseEntity<>("Image attached.", HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/finished", produces = MediaType.IMAGE_JPEG_VALUE)
+    public @ResponseBody byte[] getFinishedImage(@RequestParam Long commissionId){
+        return commissionService.getFinishedImage(commissionId, SecurityContextHolder.getContext().getAuthentication().getName());
+    }
+
 
 }
