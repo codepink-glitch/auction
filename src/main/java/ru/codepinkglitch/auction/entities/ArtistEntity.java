@@ -14,10 +14,4 @@ public class ArtistEntity extends AbstractUser{
     @OneToMany
     private List<CommissionEntity> commissions;
 
-    public void update(ArtistEntity artistEntity){
-        super.update(artistEntity);
-        if(description != null){
-            this.description = artistEntity.getDescription();
-        }
-    }
 }

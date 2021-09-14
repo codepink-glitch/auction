@@ -10,9 +10,9 @@ import org.springframework.web.context.request.WebRequest;
 @ControllerAdvice
 public class AuctionExceptionHandler {
 
-    @ExceptionHandler({AbstractException.class})
-    public ResponseEntity<ApiError> handleGenericError(Exception exception, WebRequest request){
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, exception.getLocalizedMessage(), exception.getMessage());
+    @ExceptionHandler({ServiceException.class})
+    public ResponseEntity<ApiError> handleGenericError(ServiceException exception, WebRequest request){
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, exception.getMessage(), exception.getExceptionEnum().name());
         return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
     }
 }

@@ -6,6 +6,7 @@ import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
 import ru.codepinkglitch.auction.dtos.in.BuyerIn;
 import ru.codepinkglitch.auction.entities.*;
+import ru.codepinkglitch.auction.enums.Role;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;

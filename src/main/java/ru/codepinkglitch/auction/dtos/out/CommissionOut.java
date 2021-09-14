@@ -1,7 +1,7 @@
 package ru.codepinkglitch.auction.dtos.out;
 
 import lombok.Data;
-import ru.codepinkglitch.auction.entities.Status;
+import ru.codepinkglitch.auction.enums.Status;
 
 import java.util.List;
 

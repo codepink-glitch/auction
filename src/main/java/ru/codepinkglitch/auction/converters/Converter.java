@@ -2,12 +2,15 @@ package ru.codepinkglitch.auction.converters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import ru.codepinkglitch.auction.dtos.in.*;
 import ru.codepinkglitch.auction.dtos.out.ArtistOut;
 import ru.codepinkglitch.auction.dtos.out.BidOut;
 import ru.codepinkglitch.auction.dtos.out.CommissionOut;
 import ru.codepinkglitch.auction.entities.*;
+import ru.codepinkglitch.auction.enums.BidStatus;
+import ru.codepinkglitch.auction.enums.Role;
 import ru.codepinkglitch.auction.repositories.BidRepository;
 import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.CommissionRepository;
@@ -30,13 +33,7 @@ public class Converter {
 
     public BuyerEntity buyerFromDto(BuyerIn buyer){
         BuyerEntity buyerEntity = new BuyerEntity();
-        buyerEntity.setBids(buyer.getBidsIds().stream()
-                // TODO: 9/9/2021 get all by 1 sql request
-                .map(bidRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList())
-        );
+        buyerEntity.setBids(bidRepository.findByIdIn(buyer.getBidsIds()));
         buyerEntity.setId(buyer.getId());
         buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())),
                 buyer.getPassword(), buyer.getUsername(), buyer.getUserDetailsId()));
@@ -187,5 +184,27 @@ public class Converter {
         bidOut.setAmount(bidEntity.getAmount());
         bidOut.setBuyerUsername(bidEntity.getBuyer().getUserDetails().getUsername());
         return bidOut;
+    }
+
+    public void updateUser(AbstractUser toUpdate, AbstractUser updateFrom, PasswordEncoder passwordEncoder){
+        if(updateFrom.getBillingDetails() != null){
+            toUpdate.setBillingDetails(updateFrom.getBillingDetails());
+        }
+        if(updateFrom.getEmail() != null){
+            toUpdate.setEmail(updateFrom.getEmail());
+        }
+        if(updateFrom.getUserDetails().getUsername() != null){
+            toUpdate.getUserDetails().setUsername(updateFrom.getUserDetails().getUsername());
+        }
+        if(updateFrom.getUserDetails().getPassword() != null){
+            toUpdate.getUserDetails().setPassword(passwordEncoder.encode(updateFrom.getUserDetails().getPassword()));
+        }
+    }
+
+    public void updateArtistEntity(ArtistEntity toUpdate, ArtistEntity updateFrom, PasswordEncoder passwordEncoder){
+        updateUser(toUpdate, updateFrom, passwordEncoder);
+        if(updateFrom.getDescription() != null){
+            toUpdate.setDescription(updateFrom.getDescription());
+        }
     }
 }

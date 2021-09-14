@@ -19,13 +19,12 @@ import org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.dtos.in.CommissionWrapper;
-import ru.codepinkglitch.auction.entities.Status;
+import ru.codepinkglitch.auction.enums.Status;
 import ru.codepinkglitch.auction.services.TestService;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.List;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;

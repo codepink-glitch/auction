@@ -1,7 +1,7 @@
 package ru.codepinkglitch.auction.dtos.in;
 
 import lombok.Data;
-import ru.codepinkglitch.auction.entities.BidStatus;
+import ru.codepinkglitch.auction.enums.BidStatus;
 
 import java.math.BigDecimal;
 

@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ru.codepinkglitch.auction.dtos.in.CommissionWrapper;
 import ru.codepinkglitch.auction.dtos.out.CommissionOut;
 import ru.codepinkglitch.auction.services.CommissionService;
@@ -40,7 +41,6 @@ public class MainController {
     public ResponseEntity<CommissionOut> bid(@RequestParam BigDecimal bid, @RequestParam Long commissionId){
         return new ResponseEntity<>(commissionService.setBid(bid, commissionId, SecurityContextHolder.getContext().getAuthentication().getName()), HttpStatus.OK);
     }
-
 
 
 }

@@ -3,13 +3,14 @@ package ru.codepinkglitch.auction.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.BidIn;
 import ru.codepinkglitch.auction.dtos.in.BuyerIn;
 import ru.codepinkglitch.auction.entities.*;
-import ru.codepinkglitch.auction.exceptions.UserAlreadyExistsException;
-import ru.codepinkglitch.auction.exceptions.UserDontExistException;
+import ru.codepinkglitch.auction.enums.BidStatus;
+import ru.codepinkglitch.auction.enums.ExceptionEnum;
+import ru.codepinkglitch.auction.enums.Role;
+import ru.codepinkglitch.auction.exceptions.ServiceException;
 import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 
@@ -28,32 +29,31 @@ public class BuyerService {
     private final UserDetailsRepository userDetailsRepository;
     private final Converter converter;
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-    private final static String NO_USER_MESSAGE = "No such user.";
+    private final String DEFAULT = "default";
 
     @PostConstruct
     private void postConstruct(){
         BuyerEntity buyer = new BuyerEntity();
         buyer.setBids(new ArrayList<>());
         BillingDetailsEntity billingDetails = new BillingDetailsEntity();
-        billingDetails.setCcCVV("default");
-        billingDetails.setCcExpiration("default");
-        billingDetails.setCity("default");
-        billingDetails.setCcNumber("default");
-        billingDetails.setName("default");
-        billingDetails.setState("default");
-        billingDetails.setStreet("default");
-        billingDetails.setZip("default");
+        billingDetails.setCcCVV(DEFAULT);
+        billingDetails.setCcExpiration(DEFAULT);
+        billingDetails.setCity(DEFAULT);
+        billingDetails.setCcNumber(DEFAULT);
+        billingDetails.setName(DEFAULT);
+        billingDetails.setState(DEFAULT);
+        billingDetails.setStreet(DEFAULT);
+        billingDetails.setZip(DEFAULT);
         buyer.setBillingDetails(billingDetails);
-        buyer.setEmail("default");
-        List<MyAuthority> list = Collections.emptyList();
-        buyer.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())), "default", "default", 1L));
+        buyer.setEmail(DEFAULT);
+        buyer.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())), DEFAULT, DEFAULT, 1L));
         buyer.setId(1L);
         buyerRepository.save(buyer);
     }
 
     public BuyerIn save(BuyerIn buyerIn){
-        if(userDetailsRepository.existsMyUserDetailsByUsername(buyerIn.getUsername())){
-            throw new UserAlreadyExistsException("User with such username already exists.");
+        if(userDetailsRepository.existsMyUserDetailsByUsername(buyerIn.getUsername()).equals(true)){
+            throw new ServiceException(ExceptionEnum.USER_ALREADY_EXISTS_EXCEPTION);
         } else {
             buyerIn.setPassword(bCryptPasswordEncoder.encode(buyerIn.getPassword()));
             return converter.buyerToDto(buyerRepository.save(converter.buyerFromDto(buyerIn)));
@@ -63,14 +63,14 @@ public class BuyerService {
     public BuyerIn update(String name, BuyerIn buyerIn) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         BuyerEntity fromEntity = converter.buyerFromDto(buyerIn);
-        buyerEntity.update(fromEntity);
+        converter.updateUser(buyerEntity, fromEntity, bCryptPasswordEncoder);
         return converter.buyerToDto(buyerRepository.save(buyerEntity));
     }
 
     public void delete(String name) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(buyerEntity == null){
-            throw new UserDontExistException(NO_USER_MESSAGE);
+            throw new ServiceException(ExceptionEnum.USER_DONT_EXIST_EXCEPTION);
         }
         buyerRepository.delete(buyerEntity);
     }
@@ -78,7 +78,7 @@ public class BuyerService {
     public BuyerIn find(String name) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(buyerEntity == null){
-            throw new UserDontExistException(NO_USER_MESSAGE);
+            throw new ServiceException(ExceptionEnum.USER_DONT_EXIST_EXCEPTION);
         }
         return converter.buyerToDto(buyerEntity);
     }
@@ -86,7 +86,7 @@ public class BuyerService {
     public List<BidIn> getBids(String name) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(buyerEntity == null){
-            throw new UserDontExistException(NO_USER_MESSAGE);
+            throw new ServiceException(ExceptionEnum.USER_DONT_EXIST_EXCEPTION);
         }
         return buyerEntity.getBids().stream()
                 .map(converter::bidToDto)
@@ -96,7 +96,7 @@ public class BuyerService {
     public List<BidIn> getWonBids(String name) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(buyerEntity == null){
-            throw new UserDontExistException(NO_USER_MESSAGE);
+            throw new ServiceException(ExceptionEnum.USER_DONT_EXIST_EXCEPTION);
         }
         return buyerEntity.getBids().stream()
                 .filter(x -> x.getBidStatus().equals(BidStatus.WON))

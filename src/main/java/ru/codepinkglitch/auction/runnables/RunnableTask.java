@@ -1,13 +1,10 @@
 package ru.codepinkglitch.auction.runnables;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
 import org.springframework.transaction.annotation.Transactional;
-import ru.codepinkglitch.auction.entities.BidStatus;
+import ru.codepinkglitch.auction.enums.BidStatus;
 import ru.codepinkglitch.auction.entities.CommissionEntity;
-import ru.codepinkglitch.auction.entities.Status;
-import ru.codepinkglitch.auction.exceptions.TimerException;
+import ru.codepinkglitch.auction.enums.Status;
+import ru.codepinkglitch.auction.exceptions.ServiceException;
 import ru.codepinkglitch.auction.repositories.CommissionRepository;
 
 
@@ -25,12 +22,12 @@ public class RunnableTask implements Runnable{
     @Override
     @Transactional
     public void run() {
-        CommissionEntity commissionEntity = commissionRepository.findById(id).orElseThrow(TimerException::new);
+        CommissionEntity commissionEntity = commissionRepository.findById(id).orElseThrow(ServiceException::new);
         commissionEntity.setStatus(Status.CLOSED);
         commissionEntity.getBids().stream()
                 .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
                 .findFirst()
-                .orElseThrow(TimerException::new)
+                .orElseThrow(ServiceException::new)
                 .setBidStatus(BidStatus.WON);
         commissionRepository.save(commissionEntity);
     }

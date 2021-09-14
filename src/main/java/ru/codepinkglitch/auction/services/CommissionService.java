@@ -4,11 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.CommissionIn;
 import ru.codepinkglitch.auction.dtos.in.CommissionWrapper;
 import ru.codepinkglitch.auction.dtos.out.CommissionOut;
 import ru.codepinkglitch.auction.entities.*;
+import ru.codepinkglitch.auction.enums.BidStatus;
+import ru.codepinkglitch.auction.enums.ExceptionEnum;
+import ru.codepinkglitch.auction.enums.Status;
 import ru.codepinkglitch.auction.exceptions.*;
 import ru.codepinkglitch.auction.repositories.*;
 import ru.codepinkglitch.auction.runnables.RunnableTask;
@@ -35,13 +39,13 @@ public class CommissionService {
         if (optional.isPresent()) {
             return converter.commissionToDto(optional.get());
         } else {
-            throw new UserDontExistException("No such user.");
+            throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
         }
     }
 
     public CommissionIn save(CommissionIn commissionIn) {
         if (commissionIn == null) {
-            throw new EmptyCommissionException("Can not save this commission.");
+            throw new ServiceException(ExceptionEnum.EMPTY_COMMISSION_EXCEPTION);
         } else {
             CommissionEntity commission = converter.commissionFromDto(commissionIn);
             return converter.commissionToDto(commissionRepository.save(commission));
@@ -55,7 +59,7 @@ public class CommissionService {
         if(!filteredList.isEmpty()) {
             return filteredList;
         } else {
-            throw new CommissionDontExistException("No such commissions.");
+            throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
         }
     }
 
@@ -63,7 +67,7 @@ public class CommissionService {
         if(commissionRepository.existsById(id)){
             commissionRepository.deleteById(id);
         } else {
-            throw new CommissionDontExistException("No such commission.");
+            throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
         }
     }
 
@@ -101,15 +105,19 @@ public class CommissionService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public CommissionOut setBid(BigDecimal bid, Long commissionId, String name) {
         Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
         if(!optional.isPresent()) {
-            throw new CommissionDontExistException("No such commission.");
+            throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
         }
         CommissionEntity commissionEntity = optional.get();
         if(commissionEntity.getBids().stream()
-                .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST)).findFirst().orElseThrow(RuntimeException::new).getAmount().compareTo(bid) > 0){
-            throw new BidException("You can not outbid with lower amount.");
+                .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
+                .findFirst()
+                .orElseThrow(RuntimeException::new)
+                .getAmount().compareTo(bid) > 0) {
+            throw new ServiceException(ExceptionEnum.BID_EXCEPTION);
         }
         commissionEntity.getBids().stream()
                 .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
@@ -120,11 +128,12 @@ public class CommissionService {
         bidEntity.setBidStatus(BidStatus.HIGHEST);
         bidEntity.setAmount(bid);
         bidEntity.setCommission(commissionEntity);
-        bidEntity.setBuyer(
-                buyerRepository.findBuyerEntityByUserDetails
-                        (userDetailsRepository.findMyUserDetailsByUsername(name)
-                        ));
+        BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
+        bidEntity.setBuyer(buyerEntity);
         commissionEntity.getBids().add(bidEntity);
+        buyerEntity.getBids().add(bidEntity);
+        buyerRepository.save(buyerEntity);
         return converter.commissionToOut(commissionRepository.save(commissionEntity));
     }
+
 }

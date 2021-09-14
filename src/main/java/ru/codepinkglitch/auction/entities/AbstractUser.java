@@ -22,16 +22,5 @@ public abstract class AbstractUser {
 
     private String email;
 
-    // TODO: 9/9/2021 remove logic use repositories
-    public void update(AbstractUser abstractUser){
-        if(billingDetails != null) {
-            this.billingDetails = abstractUser.getBillingDetails();
-        }
-        if(userDetails != null) {
-            this.userDetails = abstractUser.getUserDetails();
-        }
-        if(email != null) {
-            this.email = abstractUser.getEmail();
-        }
-    }
+
 }
