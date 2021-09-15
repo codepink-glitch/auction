@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.BuyerIn;
+import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 import ru.codepinkglitch.auction.services.TestService;
 
@@ -47,6 +48,8 @@ public class BuyerControllerTest {
     @Autowired
     UserDetailsRepository userDetailsRepository;
 
+    @Autowired
+    BuyerRepository buyerRepository;
 
     MockMvc mockMvc;
     static BuyerIn savedEntity;
@@ -67,11 +70,12 @@ public class BuyerControllerTest {
                         .apply(documentationConfiguration(this.restDocumentation))
                         .apply(springSecurity());
         this.mockMvc = builder.build();
-        if(!initIsDone) {
-            savedEntity = testService.initForBuyer(email, username, password);
-            token = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
-            initIsDone = true;
+        if(userDetailsRepository.existsMyUserDetailsByUsername(username)){
+            buyerRepository.delete(buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(username)));
         }
+        savedEntity = testService.initForBuyer(email, username, password);
+        token = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
+        initIsDone = true;
     }
 
 

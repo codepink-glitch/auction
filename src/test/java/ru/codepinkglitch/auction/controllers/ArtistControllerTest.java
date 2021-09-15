@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
+import ru.codepinkglitch.auction.repositories.ArtistRepository;
 import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 import ru.codepinkglitch.auction.services.TestService;
 
@@ -47,13 +48,15 @@ public class ArtistControllerTest {
     @Autowired
     UserDetailsRepository userDetailsRepository;
 
+    @Autowired
+    ArtistRepository artistRepository;
+
     MockMvc mockMvc;
     static ArtistIn savedEntity;
     static String email = "Petr@mail.su";
     static String username = "Petr321";
     static String password = "123";
     static String token;
-    static boolean initIsDone = false;
     String uri = "/artist/";
 
     @Rule
@@ -66,13 +69,12 @@ public class ArtistControllerTest {
                         .apply(documentationConfiguration(this.restDocumentation))
                         .apply(springSecurity());
         this.mockMvc = builder.build();
-        if(!initIsDone){
-            savedEntity  = testService.initForArtist(email, username, password);
-            token = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
-            initIsDone = true;
-    }
 
-
+        if(userDetailsRepository.existsMyUserDetailsByUsername(username)){
+            artistRepository.delete(artistRepository.findArtistEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(username)));
+        }
+        savedEntity  = testService.initForArtist(email, username, password);
+        token = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
     }
 
     @Test
@@ -108,6 +110,7 @@ public class ArtistControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + token))
                 .andDo(document("." + uri))
+                .andDo(print())
                 .andExpect(content().string("Account deleted."))
                 .andExpect(status().isOk());
 

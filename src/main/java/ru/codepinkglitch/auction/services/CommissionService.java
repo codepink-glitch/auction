@@ -35,38 +35,11 @@ public class CommissionService {
     private final Converter converter;
     private final TaskScheduler taskScheduler;
 
-    public CommissionIn findById(Long id) {
-        Optional<CommissionEntity> optional = commissionRepository.findById(id);
-        if (optional.isPresent()) {
-            return converter.commissionToDto(optional.get());
-        } else {
-            throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
-        }
-    }
-
-    public CommissionIn save(CommissionIn commissionIn) {
-        if (commissionIn == null) {
-            throw new ServiceException(ExceptionEnum.EMPTY_COMMISSION_EXCEPTION);
-        } else {
-            CommissionEntity commission = converter.commissionFromDto(commissionIn);
-            return converter.commissionToDto(commissionRepository.save(commission));
-        }
-    }
-
-
     public List<CommissionOut> findByTag(String tag) {
         List<CommissionEntity> list = commissionRepository.findAll();
         List<CommissionOut> filteredList = list.stream().filter(x -> x.getTags().contains(tag)).map(converter::commissionToOut).collect(Collectors.toList());
         if(!filteredList.isEmpty()) {
             return filteredList;
-        } else {
-            throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
-        }
-    }
-
-    public void remove(Long id) {
-        if(commissionRepository.existsById(id)){
-            commissionRepository.deleteById(id);
         } else {
             throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
         }
