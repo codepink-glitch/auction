@@ -105,6 +105,24 @@ public class ArtistControllerTest {
     }
 
     @Test
+    public void getCommissions() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.get(uri + "commissions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Basic " + token))
+                .andDo(document("." + uri + "commissions"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getSoldCommissions() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.get(uri + "commissions/sold")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Basic " + token))
+                .andDo(document("." + uri + "commissions/sold"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     public void deleteArtist() throws Exception{
         mockMvc.perform(MockMvcRequestBuilders.delete(uri)
                 .contentType(MediaType.APPLICATION_JSON)

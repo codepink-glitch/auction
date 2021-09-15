@@ -109,6 +109,25 @@ public class BuyerControllerTest {
     }
 
     @Test
+    public void getBids() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.get(uri + "bids")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Basic " + token))
+                .andDo(document("." + uri + "bids"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getWonBids() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.get(uri + "bids/won")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Basic " + token))
+                .andDo(document("." + uri + "bids/won"))
+                .andExpect(status().isOk());
+    }
+
+
+    @Test
     public void deleteBuyer() throws Exception{
 
         mockMvc.perform(MockMvcRequestBuilders.delete(uri)

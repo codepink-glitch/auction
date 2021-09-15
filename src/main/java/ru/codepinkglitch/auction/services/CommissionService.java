@@ -54,7 +54,6 @@ public class CommissionService {
                 .plusMinutes(commissionWrapper.getMinutesPeriod())
                 .plusHours(commissionWrapper.getHoursPeriod())
                 .plusDays(commissionWrapper.getDaysPeriod()));
-        commission.setPreviewPicture(commissionWrapper.getUri());
         commission.setTags(commissionWrapper.getTags());
         commission.setAuthor(
                 artistRepository.findArtistEntityByUserDetails(

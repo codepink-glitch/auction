@@ -11,6 +11,7 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,13 +23,17 @@ import ru.codepinkglitch.auction.dtos.in.CommissionWrapper;
 import ru.codepinkglitch.auction.enums.Status;
 import ru.codepinkglitch.auction.services.TestService;
 
+import java.io.File;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Base64;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -90,8 +95,6 @@ public class MainControllerTest {
         commissionWrapper.setMinutesPeriod(1);
         commissionWrapper.setTags(Arrays.asList("Character", "Cyberpunk"));
         commissionWrapper.setMinimalBid(minimalBid);
-        String commissionUri = "https://www.some_hosting.su/cyberpunk_art#666";
-        commissionWrapper.setUri(commissionUri);
 
 
         String content = mockMvc.perform(MockMvcRequestBuilders.post(uri)
@@ -102,26 +105,12 @@ public class MainControllerTest {
                 .andExpect(jsonPath("$.status").value(Status.OPEN.name()))
                 .andExpect(jsonPath("$.author.username").value(artistUsername))
                 .andExpect(jsonPath("$.author.email").value(artistEmail))
-                .andExpect(jsonPath("$.uri").value(commissionUri))
                 .andExpect(jsonPath("$.bid.amount").value(minimalBid))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
         commissionId = new Long(JsonPath.read(content,"$.id").toString());
 
-    }
-
-    @Test
-    public void getCommissionsByTag() throws Exception{
-        String uri = "/main/find?tag=Cyberpunk";
-
-        mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Basic " + buyerToken))
-                .andDo(document("." + uri))
-                .andExpect(jsonPath("$.[*].author.username").value(artistUsername))
-                .andExpect(jsonPath("$.[*].author.email").value(artistEmail))
-                .andExpect(status().isOk());
     }
 
     @Test
@@ -140,7 +129,7 @@ public class MainControllerTest {
     @Test
     public void bidToCommission() throws Exception{
         BigDecimal newBid = minimalBid.add(new BigDecimal("1"));
-        String uri = "http://localhost:8080/main/?bid=" + newBid + "&commissionId=" + commissionId;
+        String uri = "/main/?bid=" + newBid + "&commissionId=" + commissionId;
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -150,4 +139,19 @@ public class MainControllerTest {
                 .andExpect(jsonPath("$.bid.amount").value(newBid.toString()))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    public void getCommissionsByTag() throws Exception{
+        String uri = "/main/find?tag=Cyberpunk";
+
+        mockMvc.perform(MockMvcRequestBuilders.get(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Basic " + buyerToken))
+                .andDo(document("." + uri))
+                .andExpect(jsonPath("$.[*].author.username").value(artistUsername))
+                .andExpect(jsonPath("$.[*].author.email").value(artistEmail))
+                .andExpect(status().isOk());
+    }
+
+
 }

@@ -12,7 +12,6 @@ import ru.codepinkglitch.auction.entities.*;
 import ru.codepinkglitch.auction.enums.BidStatus;
 import ru.codepinkglitch.auction.enums.Role;
 import ru.codepinkglitch.auction.repositories.BidRepository;
-import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.CommissionRepository;
 
 import java.time.format.DateTimeFormatter;
@@ -27,7 +26,6 @@ public class Converter {
 
     private final BidRepository bidRepository;
     private final CommissionRepository commissionRepository;
-    private final BuyerRepository buyerRepository;
     private final ObjectMapper objectMapper;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -112,16 +110,6 @@ public class Converter {
         return bidIn;
     }
 
-    public BidEntity bidFromDto(BidIn bidIn){
-        BidEntity bidEntity = new BidEntity();
-        bidEntity.setId(bidIn.getId());
-        bidEntity.setAmount(bidIn.getAmount());
-        bidEntity.setBidStatus(bidIn.getBidStatus());
-        bidEntity.setCommission(commissionRepository.findById(bidIn.getId()).orElse(null));
-        bidEntity.setBuyer(buyerRepository.findById(bidIn.getBuyerId()).orElse(null));
-        return bidEntity;
-    }
-
     public CommissionIn commissionToDto(CommissionEntity commissionEntity){
         CommissionIn commissionIn = new CommissionIn();
         commissionIn.setId(commissionEntity.getId());
@@ -135,21 +123,6 @@ public class Converter {
                 .map(this::bidToDto)
                 .collect(Collectors.toList()));
         return commissionIn;
-    }
-
-    public CommissionEntity commissionFromDto(CommissionIn commissionIn){
-        CommissionEntity commissionEntity = new CommissionEntity();
-        commissionEntity.setId(commissionIn.getId());
-        commissionEntity.setStatus(commissionIn.getStatus());
-        commissionEntity.setPublishDate(commissionIn.getPublishDate());
-        commissionEntity.setClosingDate(commissionIn.getClosingDate());
-        commissionEntity.setPreviewPicture(commissionIn.getUri());
-        commissionEntity.setTags(commissionIn.getTags());
-        commissionEntity.setAuthor(artistFromDto(commissionIn.getAuthor()));
-        commissionEntity.setBids(commissionIn.getBids().stream()
-                .map(this::bidFromDto)
-                .collect(Collectors.toList()));
-        return commissionEntity;
     }
 
     public CommissionOut commissionToOut(CommissionEntity commissionEntity){
