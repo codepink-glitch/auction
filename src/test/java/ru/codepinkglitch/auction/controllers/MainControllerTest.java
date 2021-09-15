@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.dtos.in.CommissionWrapper;
+import ru.codepinkglitch.auction.enums.ExceptionEnum;
 import ru.codepinkglitch.auction.enums.Status;
 import ru.codepinkglitch.auction.services.TestService;
 
@@ -151,6 +152,19 @@ public class MainControllerTest {
                 .andExpect(jsonPath("$.[*].author.username").value(artistUsername))
                 .andExpect(jsonPath("$.[*].author.email").value(artistEmail))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void catchExceptionOnGetPreview() throws Exception{
+        int unreachableCommitId = 100;
+        String uri = "/main/preview?commissionId=" + unreachableCommitId;
+
+        mockMvc.perform(MockMvcRequestBuilders.get(uri)
+                .header("Authorization", "Basic " + buyerToken))
+                .andDo(document("." + uri))
+                .andDo(print())
+                .andExpect(jsonPath("$.message").value(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION.getMessage()))
+                .andExpect(status().isBadRequest());
     }
 
 
