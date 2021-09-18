@@ -5,7 +5,7 @@ import ru.codepinkglitch.auction.enums.ExceptionEnum;
 
 public class ServiceException extends AbstractException{
 
-    private ExceptionEnum exceptionEnum;
+    private final ExceptionEnum exceptionEnum;
 
     public ServiceException(ExceptionEnum exceptionEnum){
         super(exceptionEnum.getMessage());

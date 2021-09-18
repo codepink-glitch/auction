@@ -30,7 +30,7 @@ public class BuyerService {
     private final UserDetailsRepository userDetailsRepository;
     private final Converter converter;
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-    private final String DEFAULT = "default";
+    private static final String DEFAULT = "default";
 
     @PostConstruct
     private void postConstruct(){
