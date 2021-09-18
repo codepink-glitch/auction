@@ -13,7 +13,8 @@ public class CommissionIn {
     private Status status;
     private LocalDateTime publishDate;
     private LocalDateTime closingDate;
-    private String uri;
+    private boolean previewPicturePresent;
+    private boolean finishedPicturePresent;
     private List<String> tags;
     private ArtistIn author;
     private List<BidIn> bids;

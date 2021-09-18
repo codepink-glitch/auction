@@ -9,7 +9,8 @@ public enum ExceptionEnum {
     SCHEDULED_TASK_EXCEPTION("Something went wrong with scheduled task."),
     ACCESS_EXCEPTION("You are not allowed to do that."),
     PICTURE_EXCEPTION("No such picture."),
-    COMMISSION_NOT_OVER_EXCEPTION("Commission not over yet, you can't see finished picture.");
+    COMMISSION_NOT_OVER_EXCEPTION("Commission not over yet, you can't see finished picture."),
+    CONVERSION_EXCEPTION("Something went wrong with conversion.");
 
 
     private String message;

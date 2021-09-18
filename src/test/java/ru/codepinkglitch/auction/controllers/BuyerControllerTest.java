@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.BuyerIn;
+import ru.codepinkglitch.auction.dtos.out.BuyerOut;
 import ru.codepinkglitch.auction.repositories.BuyerRepository;
 import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 import ru.codepinkglitch.auction.services.TestService;
@@ -52,7 +53,7 @@ public class BuyerControllerTest {
     BuyerRepository buyerRepository;
 
     MockMvc mockMvc;
-    static BuyerIn savedEntity;
+    static BuyerOut savedEntity;
     static boolean initIsDone = false;
     static String email = "Vasily@mail.su";
     static String username = "Vasily123";

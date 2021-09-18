@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.BidIn;
 import ru.codepinkglitch.auction.dtos.in.BuyerIn;
+import ru.codepinkglitch.auction.dtos.out.BuyerOut;
 import ru.codepinkglitch.auction.entities.*;
 import ru.codepinkglitch.auction.enums.BidStatus;
 import ru.codepinkglitch.auction.enums.ExceptionEnum;
@@ -51,20 +52,20 @@ public class BuyerService {
         buyerRepository.save(buyer);
     }
 
-    public BuyerIn save(BuyerIn buyerIn){
+    public BuyerOut save(BuyerIn buyerIn){
         if(userDetailsRepository.existsMyUserDetailsByUsername(buyerIn.getUsername()).equals(true)){
             throw new ServiceException(ExceptionEnum.USER_ALREADY_EXISTS_EXCEPTION);
         } else {
             buyerIn.setPassword(bCryptPasswordEncoder.encode(buyerIn.getPassword()));
-            return converter.buyerToDto(buyerRepository.save(converter.buyerFromDto(buyerIn)));
+            return converter.buyerToOut(buyerRepository.save(converter.buyerFromDto(buyerIn)));
         }
     }
 
-    public BuyerIn update(String name, BuyerIn buyerIn) {
+    public BuyerOut update(String name, BuyerIn buyerIn) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         BuyerEntity fromEntity = converter.buyerFromDto(buyerIn);
         converter.updateUser(buyerEntity, fromEntity, bCryptPasswordEncoder);
-        return converter.buyerToDto(buyerRepository.save(buyerEntity));
+        return converter.buyerToOut(buyerRepository.save(buyerEntity));
     }
 
     public void delete(String name) {
@@ -75,12 +76,12 @@ public class BuyerService {
         buyerRepository.delete(buyerEntity);
     }
 
-    public BuyerIn find(String name) {
+    public BuyerOut find(String name) {
         BuyerEntity buyerEntity = buyerRepository.findBuyerEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(buyerEntity == null){
             throw new ServiceException(ExceptionEnum.USER_DONT_EXIST_EXCEPTION);
         }
-        return converter.buyerToDto(buyerEntity);
+        return converter.buyerToOut(buyerEntity);
     }
 
     public List<BidIn> getBids(String name) {

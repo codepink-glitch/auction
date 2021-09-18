@@ -1,26 +1,19 @@
 package ru.codepinkglitch.auction.services;
 
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
 import ru.codepinkglitch.auction.dtos.in.BuyerIn;
+import ru.codepinkglitch.auction.dtos.out.ArtistOut;
+import ru.codepinkglitch.auction.dtos.out.BuyerOut;
 import ru.codepinkglitch.auction.entities.*;
-import ru.codepinkglitch.auction.enums.BidStatus;
 import ru.codepinkglitch.auction.enums.Role;
-import ru.codepinkglitch.auction.enums.Status;
 import ru.codepinkglitch.auction.repositories.ArtistRepository;
 import ru.codepinkglitch.auction.repositories.BuyerRepository;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 
 @Service
@@ -57,7 +50,7 @@ public class TestService {
         billingDetailsEntity.setCcCVV("111");
     }
 
-    public BuyerIn initForBuyer(String email, String username, String password) {
+    public BuyerOut initForBuyer(String email, String username, String password) {
         BuyerEntity buyerEntity = new BuyerEntity();
         buyerEntity.setBillingDetails(billingDetailsEntity);
         buyerEntity.setBids(new ArrayList<>());
@@ -68,7 +61,7 @@ public class TestService {
         return buyerService.save(converter.buyerToDto(buyerEntity));
     }
 
-    public ArtistIn initForArtist(String email, String username, String password){
+    public ArtistOut initForArtist(String email, String username, String password){
             ArtistEntity artistEntity = new ArtistEntity();
             artistEntity.setBillingDetails(billingDetailsEntity);
             artistEntity.setCommissions(new ArrayList<>());

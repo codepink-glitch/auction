@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
 import ru.codepinkglitch.auction.dtos.in.CommissionIn;
+import ru.codepinkglitch.auction.dtos.out.ArtistOut;
 import ru.codepinkglitch.auction.dtos.out.CommissionOut;
 import ru.codepinkglitch.auction.services.ArtistService;
 
@@ -20,7 +21,7 @@ public class ArtistController {
     private final ArtistService artistService;
 
     @PutMapping
-    public ResponseEntity<ArtistIn> update(@RequestBody ArtistIn artistIn){
+    public ResponseEntity<ArtistOut> update(@RequestBody ArtistIn artistIn){
         return new ResponseEntity<>(artistService.update(SecurityContextHolder.getContext().getAuthentication().getName(), artistIn), HttpStatus.OK);
     }
 
@@ -31,7 +32,7 @@ public class ArtistController {
     }
 
     @GetMapping
-    public ResponseEntity<ArtistIn> getArtist(){
+    public ResponseEntity<ArtistOut> getArtist(){
         return new ResponseEntity<>(artistService.find(SecurityContextHolder.getContext().getAuthentication().getName()), HttpStatus.OK);
     }
 

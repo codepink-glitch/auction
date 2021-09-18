@@ -5,11 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import ru.codepinkglitch.auction.dtos.in.*;
-import ru.codepinkglitch.auction.dtos.out.ArtistOut;
-import ru.codepinkglitch.auction.dtos.out.BidOut;
-import ru.codepinkglitch.auction.dtos.out.CommissionOut;
+import ru.codepinkglitch.auction.dtos.out.*;
 import ru.codepinkglitch.auction.entities.*;
-import ru.codepinkglitch.auction.enums.BidStatus;
 import ru.codepinkglitch.auction.enums.Role;
 import ru.codepinkglitch.auction.repositories.BidRepository;
 import ru.codepinkglitch.auction.repositories.CommissionRepository;
@@ -116,7 +113,8 @@ public class Converter {
         commissionIn.setStatus(commissionEntity.getStatus());
         commissionIn.setPublishDate(commissionEntity.getPublishDate());
         commissionIn.setClosingDate(commissionEntity.getClosingDate());
-        commissionIn.setUri(commissionEntity.getPreviewPicture());
+        commissionIn.setPreviewPicturePresent(commissionEntity.getPreviewPicture() != null);
+        commissionIn.setFinishedPicturePresent(commissionEntity.getFinishedPicture() != null);
         commissionIn.setTags(commissionEntity.getTags());
         commissionIn.setAuthor(artistToDto(commissionEntity.getAuthor()));
         commissionIn.setBids(commissionEntity.getBids().stream()
@@ -131,14 +129,15 @@ public class Converter {
         commissionOut.setStatus(commissionEntity.getStatus());
         commissionOut.setPublishDate(commissionEntity.getPublishDate().format(formatter));
         commissionOut.setClosingDate(commissionEntity.getClosingDate().format(formatter));
-        commissionOut.setUri(commissionEntity.getPreviewPicture());
+        commissionOut.setPreviewPicturePresent(commissionEntity.getPreviewPicture() != null);
+        commissionOut.setFinishedPicturePresent(commissionEntity.getFinishedPicture() != null);
         commissionOut.setTags(commissionEntity.getTags());
-        commissionOut.setAuthor(artistToOut(commissionEntity.getAuthor()));
-        // TODO: 9/9/2021 remove split business and mapping
-        commissionOut.setBid(bidToOut(commissionEntity.getBids().stream()
-                .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST) || x.getBidStatus().equals(BidStatus.WON))
-                .findFirst()
-                .orElseThrow(RuntimeException::new)));
+        InsideCommissionArtist insideCommissionArtist = new InsideCommissionArtist();
+        insideCommissionArtist.setId(commissionEntity.getAuthor().getId());
+        insideCommissionArtist.setUsername(commissionEntity.getAuthor().getUserDetails().getUsername());
+        insideCommissionArtist.setEmail(commissionEntity.getAuthor().getEmail());
+        insideCommissionArtist.setDescription(commissionEntity.getAuthor().getDescription());
+        commissionOut.setAuthor(insideCommissionArtist);
         return commissionOut;
     }
 
@@ -148,7 +147,17 @@ public class Converter {
         artistOut.setUsername(artistEntity.getUserDetails().getUsername());
         artistOut.setEmail(artistEntity.getEmail());
         artistOut.setDescription(artistEntity.getDescription());
+        artistOut.setBillingDetails(detailsToDto(artistEntity.getBillingDetails()));
         return artistOut;
+    }
+
+    public BuyerOut buyerToOut(BuyerEntity buyerEntity){
+        BuyerOut buyerOut = new BuyerOut();
+        buyerOut.setId(buyerEntity.getId());
+        buyerOut.setUsername(buyerEntity.getUserDetails().getUsername());
+        buyerOut.setEmail(buyerEntity.getEmail());
+        buyerOut.setBillingDetails(detailsToDto(buyerEntity.getBillingDetails()));
+        return buyerOut;
     }
 
     public BidOut bidToOut(BidEntity bidEntity){

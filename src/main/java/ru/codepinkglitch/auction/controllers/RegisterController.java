@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
 import ru.codepinkglitch.auction.dtos.in.BuyerIn;
+import ru.codepinkglitch.auction.dtos.out.ArtistOut;
+import ru.codepinkglitch.auction.dtos.out.BuyerOut;
 import ru.codepinkglitch.auction.services.ArtistService;
 import ru.codepinkglitch.auction.services.BuyerService;
 
@@ -19,12 +21,12 @@ public class RegisterController {
     private final ArtistService artistService;
 
     @PostMapping("/buyer")
-    public ResponseEntity<BuyerIn> newBuyer(@RequestBody BuyerIn buyer){
+    public ResponseEntity<BuyerOut> newBuyer(@RequestBody BuyerIn buyer){
         return new ResponseEntity<>(buyerService.save(buyer), HttpStatus.OK);
     }
 
     @PostMapping("/artist")
-    public ResponseEntity<ArtistIn> newArtist(@RequestBody ArtistIn artist){
+    public ResponseEntity<ArtistOut> newArtist(@RequestBody ArtistIn artist){
         return new ResponseEntity<>(artistService.save(artist), HttpStatus.OK);
     }
 }

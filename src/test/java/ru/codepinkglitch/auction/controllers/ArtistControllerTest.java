@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.ArtistIn;
+import ru.codepinkglitch.auction.dtos.out.ArtistOut;
 import ru.codepinkglitch.auction.repositories.ArtistRepository;
 import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 import ru.codepinkglitch.auction.services.TestService;
@@ -52,7 +53,7 @@ public class ArtistControllerTest {
     ArtistRepository artistRepository;
 
     MockMvc mockMvc;
-    static ArtistIn savedEntity;
+    static ArtistOut savedEntity;
     static String email = "Petr@mail.su";
     static String username = "Petr321";
     static String password = "123";

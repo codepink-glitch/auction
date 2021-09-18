@@ -12,8 +12,9 @@ public class CommissionOut {
     private Status status;
     private String publishDate;
     private String closingDate;
-    private String uri;
+    private boolean previewPicturePresent;
+    private boolean finishedPicturePresent;
     private List<String> tags;
-    private ArtistOut author;
+    private InsideCommissionArtist author;
     private BidOut bid;
 }
