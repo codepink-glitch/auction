@@ -28,7 +28,9 @@ public class Converter {
 
     public BuyerEntity buyerFromDto(BuyerIn buyer){
         BuyerEntity buyerEntity = new BuyerEntity();
-        buyerEntity.setBids(bidRepository.findByIdIn(buyer.getBidsIds()));
+        if(buyer.getBidsIds() != null) {
+            buyerEntity.setBids(bidRepository.findByIdIn(buyer.getBidsIds()));
+        }
         buyerEntity.setId(buyer.getId());
         buyerEntity.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())),
                 buyer.getPassword(), buyer.getUsername(), buyer.getUserDetailsId()));
@@ -86,13 +88,15 @@ public class Converter {
         artistEntity.setEmail(artistIn.getEmail());
         artistEntity.setBillingDetails(detailsFromDto(artistIn.getBillingDetails()));
         artistEntity.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.ARTIST.name())), artistIn.getPassword(), artistIn.getUsername(), artistIn.getUserDetailsId()));
-        artistEntity.setCommissions(artistIn.getCommissionsIds()
-                .stream()
-                .map(commissionRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList())
-        );
+        if(artistIn.getCommissionsIds() != null) {
+            artistEntity.setCommissions(artistIn.getCommissionsIds()
+                    .stream()
+                    .map(commissionRepository::findById)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList())
+            );
+        }
         artistEntity.setDescription(artistIn.getDescription());
         return artistEntity;
     }
