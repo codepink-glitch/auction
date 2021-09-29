@@ -31,6 +31,7 @@ public class BuyerService {
     private final Converter converter;
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
     private static final String DEFAULT = "default";
+    private static BuyerEntity defaultEntity;
 
     @PostConstruct
     private void postConstruct(){
@@ -49,7 +50,11 @@ public class BuyerService {
         buyer.setEmail(DEFAULT);
         buyer.setUserDetails(new MyUserDetails(Collections.singletonList(new MyAuthority(Role.BUYER.name())), DEFAULT, DEFAULT, 1L));
         buyer.setId(1L);
-        buyerRepository.save(buyer);
+        defaultEntity = buyerRepository.save(buyer);
+    }
+
+    public static String getDefaultBuyerUsername(){
+        return defaultEntity.getUserDetails().getUsername();
     }
 
     public BuyerOut save(BuyerIn buyerIn){

@@ -82,12 +82,10 @@ public class BuyerControllerTest {
 
     @Test
     public void getBuyer() throws Exception{
-        String uri = "/buyer/";
-
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\")))
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(status().isOk());
@@ -102,7 +100,7 @@ public class BuyerControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(savedEntity))
                 .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\")))
                 .andDo(print())
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.email").value(email))
@@ -111,19 +109,23 @@ public class BuyerControllerTest {
 
     @Test
     public void getBids() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.get(uri + "bids")
+        String bidsUri = uri + "bids";
+
+        mockMvc.perform(MockMvcRequestBuilders.get(bidsUri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri + "bids"))
+                .andDo(document(bidsUri.replace("/", "\\")))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void getWonBids() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.get(uri + "bids/won")
+        String wonBidsUri = uri + "bids/won";
+
+        mockMvc.perform(MockMvcRequestBuilders.get(wonBidsUri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri + "bids/won"))
+                .andDo(document(wonBidsUri.replace("/", "\\")))
                 .andExpect(status().isOk());
     }
 
@@ -134,7 +136,7 @@ public class BuyerControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\")))
                 .andDo(print())
                 .andExpect(content().string("Account deleted."))
                 .andExpect(status().isOk());

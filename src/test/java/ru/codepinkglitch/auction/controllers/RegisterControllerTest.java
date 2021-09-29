@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -75,7 +76,7 @@ public class RegisterControllerTest {
         mockMvc.perform(post(uri)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buyerIn)))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("Vasily123"))
                 .andExpect(jsonPath("$.email").value("vasily@mail.su"));
@@ -85,7 +86,6 @@ public class RegisterControllerTest {
     public void newArtist() throws Exception{
         ArtistIn artistIn = new ArtistIn();
         BillingDetailsIn billingDetailsIn = new BillingDetailsIn();
-        //billingDetailsIn.setId(1L);
         billingDetailsIn.setName("Petro Petrov");
         billingDetailsIn.setStreet("Pupkina");
         billingDetailsIn.setCity("Moscow");
@@ -96,7 +96,6 @@ public class RegisterControllerTest {
         billingDetailsIn.setCcCVV("111");
         artistIn.setBillingDetails(billingDetailsIn);
         artistIn.setDescription("default");
-        //artistIn.setId(2L);
         artistIn.setCommissionsIds(new ArrayList<>());
         artistIn.setUsername("Petro123");
         artistIn.setPassword("123");
@@ -106,7 +105,7 @@ public class RegisterControllerTest {
         mockMvc.perform(post(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(artistIn)))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("Petro123"))
                 .andExpect(jsonPath("$.email").value("petro@mail.su"));

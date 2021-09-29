@@ -7,7 +7,10 @@ import org.springframework.stereotype.Component;
 import ru.codepinkglitch.auction.dtos.in.*;
 import ru.codepinkglitch.auction.dtos.out.*;
 import ru.codepinkglitch.auction.entities.*;
+import ru.codepinkglitch.auction.enums.BidStatus;
+import ru.codepinkglitch.auction.enums.ExceptionEnum;
 import ru.codepinkglitch.auction.enums.Role;
+import ru.codepinkglitch.auction.exceptions.ServiceException;
 import ru.codepinkglitch.auction.repositories.BidRepository;
 import ru.codepinkglitch.auction.repositories.CommissionRepository;
 
@@ -142,6 +145,13 @@ public class Converter {
         insideCommissionArtist.setEmail(commissionEntity.getAuthor().getEmail());
         insideCommissionArtist.setDescription(commissionEntity.getAuthor().getDescription());
         commissionOut.setAuthor(insideCommissionArtist);
+        commissionOut.setBid(commissionEntity.getBids()
+                .stream()
+                .filter(x -> x.getBidStatus().equals(BidStatus.WON) || x.getBidStatus().equals(BidStatus.HIGHEST))
+                .findFirst()
+                .map(this::bidToOut)
+                .orElseThrow(() -> new ServiceException(ExceptionEnum.CONVERSION_EXCEPTION))
+        );
         return commissionOut;
     }
 

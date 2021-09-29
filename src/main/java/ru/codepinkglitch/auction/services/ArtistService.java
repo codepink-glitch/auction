@@ -78,22 +78,11 @@ public class ArtistService {
         if(artistEntity == null){
             throw new ServiceException(ExceptionEnum.USER_DONT_EXIST_EXCEPTION);
         }
-        List<CommissionEntity> filtered = artistEntity.getCommissions()
+        return artistEntity.getCommissions()
                 .stream()
                 .filter(x -> x.getStatus().equals(Status.CLOSED))
-                .collect(Collectors.toList());
-        List<CommissionOut> converted = filtered.stream()
                 .map(converter::commissionToOut)
+                .filter(x -> !x.getBid().getBuyerUsername().equals(BuyerService.getDefaultBuyerUsername()))
                 .collect(Collectors.toList());
-        for(int i = 0; i < converted.size(); i++){
-            CommissionOut commissionOut = converted.get(i);
-            BidEntity bidEntity = filtered.get(i).getBids().stream()
-                    .filter(x -> x.getBidStatus().equals(BidStatus.WON) || x.getBidStatus().equals(BidStatus.HIGHEST))
-                    .findFirst()
-                    .orElseThrow(() -> new ServiceException(ExceptionEnum.CONVERSION_EXCEPTION));
-            commissionOut.setBid(converter.bidToOut(bidEntity));
-            converted.set(i, commissionOut);
-        }
-        return converted;
     }
 }

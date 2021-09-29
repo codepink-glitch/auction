@@ -83,7 +83,7 @@ public class ArtistControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\")))
                 .andDo(print())
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.email").value(email))
@@ -99,7 +99,7 @@ public class ArtistControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(savedEntity))
                 .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\")))
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.email").value(email))
                 .andExpect(status().isOk());
@@ -107,19 +107,23 @@ public class ArtistControllerTest {
 
     @Test
     public void getCommissions() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.get(uri + "commissions")
+        String commissionsUri = uri + "commissions";
+
+        mockMvc.perform(MockMvcRequestBuilders.get(commissionsUri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri + "commissions"))
+                .andDo(document(commissionsUri.replace("/", "\\")))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void getSoldCommissions() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.get(uri + "commissions/sold")
+        String soldCommissionsUri = uri + "commissions/sold";
+
+        mockMvc.perform(MockMvcRequestBuilders.get(soldCommissionsUri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri + "commissions/sold"))
+                .andDo(document(soldCommissionsUri.replace("/", "\\")))
                 .andExpect(status().isOk());
     }
 
@@ -128,7 +132,7 @@ public class ArtistControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + token))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\")))
                 .andDo(print())
                 .andExpect(content().string("Account deleted."))
                 .andExpect(status().isOk());

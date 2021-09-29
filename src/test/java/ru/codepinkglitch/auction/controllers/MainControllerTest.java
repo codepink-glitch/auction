@@ -2,10 +2,7 @@ package ru.codepinkglitch.auction.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +99,7 @@ public class MainControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(commissionWrapper))
                         .header("Authorization", "Basic " + artistToken))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\")))
                 .andExpect(jsonPath("$.status").value(Status.OPEN.name()))
                 .andExpect(jsonPath("$.author.username").value(artistUsername))
                 .andExpect(jsonPath("$.author.email").value(artistEmail))
@@ -121,7 +118,7 @@ public class MainControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + buyerToken))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\")))
                 .andExpect(jsonPath("$.[*].author.username").value(artistUsername))
                 .andExpect(jsonPath("$.[*].author.email").value(artistEmail))
                 .andExpect(status().isOk());
@@ -135,7 +132,7 @@ public class MainControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + buyerToken))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\").replace("?", "(question_mark)")))
                 .andExpect(jsonPath("$.bid.buyerUsername").value(buyerUsername))
                 .andExpect(jsonPath("$.bid.amount").value(newBid.toString()))
                 .andExpect(status().isOk());
@@ -148,7 +145,7 @@ public class MainControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Basic " + buyerToken))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\").replace("?", "(question_mark)")))
                 .andExpect(jsonPath("$.[*].author.username").value(artistUsername))
                 .andExpect(jsonPath("$.[*].author.email").value(artistEmail))
                 .andExpect(status().isOk());
@@ -156,16 +153,31 @@ public class MainControllerTest {
 
     @Test
     public void catchExceptionOnGetPreview() throws Exception{
-        int unreachableCommitId = 100;
-        String uri = "/main/preview?commissionId=" + unreachableCommitId;
+        int unreachableCommissionId = 100;
+        String uri = "/main/preview?commissionId=" + unreachableCommissionId;
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
                 .header("Authorization", "Basic " + buyerToken))
-                .andDo(document("." + uri))
+                .andDo(document(uri.replace("/", "\\").replace("?", "(question_mark)")))
                 .andDo(print())
                 .andExpect(jsonPath("$.message").value(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION.getMessage()))
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    public void uploadingPreviewImage() throws Exception{
+        String uri = "/main/image?commissionId=" + commissionId;
 
+        File file = new File("src/test/java/ru/codepinkglitch/auction/resources/previewImage.jpeg");
+        MockMultipartFile mockFile = new MockMultipartFile("file", file.getName(), MediaType.IMAGE_JPEG_VALUE, Files.readAllBytes(file.toPath()));
+
+        String response = mockMvc.perform(multipart(uri)
+                        .file(mockFile)
+                        .header("Authorization", "Basic " + artistToken))
+                .andDo(document(uri.replace("/", "\\").replace("?", "(question_mark)")))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        Assert.assertEquals("Image attached.", response);
+    }
 }

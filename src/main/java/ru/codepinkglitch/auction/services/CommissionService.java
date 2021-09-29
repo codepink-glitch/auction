@@ -35,14 +35,15 @@ public class CommissionService {
     private final TaskScheduler taskScheduler;
 
     public List<CommissionOut> findByTag(String tag) {
-        List<CommissionEntity> filtered = commissionRepository.findAll().stream()
+        List<CommissionOut> filtered = commissionRepository.findAll()
+                .stream()
                 .filter(x -> x.getTags().contains(tag))
+                .map(converter::commissionToOut)
                 .collect(Collectors.toList());
         if(filtered.isEmpty()){
             throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
         }
-        List<CommissionOut> filteredDtos = filtered.stream().map(converter::commissionToOut).collect(Collectors.toList());
-        return setBidForCommissionOutList(filteredDtos, filtered);
+        return filtered;
     }
 
     @Transactional
@@ -68,15 +69,11 @@ public class CommissionService {
         CommissionOut commissionOut = converter.commissionToOut(commissionRepository.save(commission));
         taskScheduler.schedule(new RunnableTask(commissionOut.getId(), commissionRepository),
                 Date.from(commission.getClosingDate().atZone(ZoneId.systemDefault()).toInstant()));
-        return setBidForCommissionOut(commissionOut, commission);
+        return commissionOut;
     }
 
     public List<CommissionOut> findAll() {
-        List<CommissionEntity> allCommissions = commissionRepository.findAll();
-        List<CommissionOut> commissionsToOut = allCommissions.stream()
-                .map(converter::commissionToOut)
-                .collect(Collectors.toList());
-       return setBidForCommissionOutList(commissionsToOut, allCommissions);
+        return commissionRepository.findAll().stream().map(converter::commissionToOut).collect(Collectors.toList());
     }
 
     @Transactional
@@ -107,8 +104,7 @@ public class CommissionService {
         commissionEntity.getBids().add(bidEntity);
         buyerEntity.getBids().add(bidEntity);
         buyerRepository.save(buyerEntity);
-        CommissionOut commissionOut = converter.commissionToOut(commissionRepository.save(commissionEntity));
-        return setBidForCommissionOut(commissionOut, commissionEntity);
+        return converter.commissionToOut(commissionRepository.save(commissionEntity));
     }
 
 
@@ -182,22 +178,4 @@ public class CommissionService {
         return Base64.getDecoder().decode(commissionEntity.getFinishedPicture());
     }
 
-    private CommissionOut setBidForCommissionOut(CommissionOut commissionToSetBid, CommissionEntity commissionFromWhichGetBid){
-        BidEntity bidEntity = commissionFromWhichGetBid.getBids().stream()
-                .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST) || x.getBidStatus().equals(BidStatus.WON))
-                .findFirst()
-                .orElseThrow(() -> new ServiceException(ExceptionEnum.CONVERSION_EXCEPTION));
-        commissionToSetBid.setBid(converter.bidToOut(bidEntity));
-        return commissionToSetBid;
-    }
-
-    private List<CommissionOut> setBidForCommissionOutList(List<CommissionOut> listToSetBid, List<CommissionEntity> listFromWhichGetBids){
-        if(listToSetBid.size() != listFromWhichGetBids.size()){
-            throw new ServiceException(ExceptionEnum.CONVERSION_EXCEPTION);
-        }
-        for(int i = 0; i < listToSetBid.size(); i++){
-            listToSetBid.set(i, setBidForCommissionOut(listToSetBid.get(i), listFromWhichGetBids.get(i)));
-        }
-        return listToSetBid;
-    }
 }
