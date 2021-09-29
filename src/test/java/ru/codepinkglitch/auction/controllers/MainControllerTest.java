@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -61,6 +62,8 @@ public class MainControllerTest {
     static String buyerToken;
     static BigDecimal minimalBid;
     static long commissionId;
+    static String commissionTag = "character";
+    static BigDecimal commissionMinimalBid;
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
@@ -78,6 +81,8 @@ public class MainControllerTest {
             testService.initForBuyer(buyerEmail, buyerUsername, buyerPassword);
             buyerToken = new String(Base64.getEncoder().encode((buyerUsername + ":" + buyerPassword).getBytes()));
             minimalBid = new BigDecimal("5.5");
+            commissionMinimalBid = new BigDecimal("10.0");
+            commissionId = testService.initForCommission(artistUsername, Collections.singletonList(commissionTag), commissionMinimalBid).getId();
             initIsDone = true;
         }
     }
@@ -95,7 +100,7 @@ public class MainControllerTest {
         commissionWrapper.setMinimalBid(minimalBid);
 
 
-        String content = mockMvc.perform(MockMvcRequestBuilders.post(uri)
+        mockMvc.perform(MockMvcRequestBuilders.post(uri)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(commissionWrapper))
                         .header("Authorization", "Basic " + artistToken))
@@ -104,10 +109,7 @@ public class MainControllerTest {
                 .andExpect(jsonPath("$.author.username").value(artistUsername))
                 .andExpect(jsonPath("$.author.email").value(artistEmail))
                 .andExpect(jsonPath("$.bid.amount").value(minimalBid))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        commissionId = new Long(JsonPath.read(content,"$.id").toString());
+                .andExpect(status().isOk());
 
     }
 
@@ -119,14 +121,14 @@ public class MainControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + buyerToken))
                 .andDo(document(uri.replace("/", "\\")))
-                .andExpect(jsonPath("$.[*].author.username").value(artistUsername))
-                .andExpect(jsonPath("$.[*].author.email").value(artistEmail))
+                .andExpect(jsonPath("$.[0].author.username").value(artistUsername))
+                .andExpect(jsonPath("$.[0].author.email").value(artistEmail))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void bidToCommission() throws Exception{
-        BigDecimal newBid = minimalBid.add(new BigDecimal("1"));
+        BigDecimal newBid = commissionMinimalBid.add(new BigDecimal("1"));
         String uri = "/main/?bid=" + newBid + "&commissionId=" + commissionId;
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
@@ -140,7 +142,7 @@ public class MainControllerTest {
 
     @Test
     public void getCommissionsByTag() throws Exception{
-        String uri = "/main/find?tag=Cyberpunk";
+        String uri = "/main/find?tag=" + commissionTag;
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -179,5 +181,32 @@ public class MainControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         Assert.assertEquals("Image attached.", response);
+    }
+
+    @Test
+    public void uploadingFinishedImage() throws Exception{
+        String uri = "/main/finishedImage?commissionId=" + commissionId;
+
+        File file = new File("src/test/java/ru/codepinkglitch/auction/resources/finishedPicture.jpeg");
+        MockMultipartFile mockFile = new MockMultipartFile("file", file.getName(), MediaType.IMAGE_JPEG_VALUE, Files.readAllBytes(file.toPath()));
+
+        String response = mockMvc.perform(multipart(uri)
+                        .file(mockFile)
+                        .header("Authorization", "Basic " + artistToken))
+                .andDo(document(uri.replace("/", "\\").replace("?", "(question_mark)")))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        Assert.assertEquals("Image attached.", response);
+    }
+
+    @Test
+    public void getPreviewImage() throws Exception{
+        String uri = "/main/preview?commissionId=" + commissionId;
+
+        mockMvc.perform(MockMvcRequestBuilders.get(uri)
+                .header("Authorization", "Basic " + buyerToken))
+                .andDo(document(uri.replace("/", "\\").replace("?", "(question_mark)")))
+                .andExpect(status().isOk());
     }
 }
