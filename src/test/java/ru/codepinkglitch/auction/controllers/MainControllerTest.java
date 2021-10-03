@@ -204,9 +204,14 @@ public class MainControllerTest {
     public void getPreviewImage() throws Exception{
         String uri = "/main/preview?commissionId=" + commissionId;
 
-        mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                .header("Authorization", "Basic " + buyerToken))
+        byte[] previewImage = mockMvc.perform(MockMvcRequestBuilders.get(uri)
+                        .header("Authorization", "Basic " + buyerToken))
                 .andDo(document(uri.replace("/", "\\").replace("?", "(question_mark)")))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+
+        File file = new File("src/test/java/ru/codepinkglitch/auction/resources/previewImage.jpeg");
+
+        Assert.assertArrayEquals(Files.readAllBytes(file.toPath()), previewImage);
     }
 }
