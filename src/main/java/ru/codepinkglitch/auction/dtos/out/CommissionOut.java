@@ -3,7 +3,7 @@ package ru.codepinkglitch.auction.dtos.out;
 import lombok.Data;
 import ru.codepinkglitch.auction.enums.Status;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
 public class CommissionOut {
@@ -14,7 +14,7 @@ public class CommissionOut {
     private String closingDate;
     private boolean previewPicturePresent;
     private boolean finishedPicturePresent;
-    private List<String> tags;
+    private Set<String> tags;
     private InsideCommissionArtist author;
     private BidOut bid;
 }

@@ -8,12 +8,17 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.codepinkglitch.auction.converters.Converter;
 import ru.codepinkglitch.auction.dtos.in.CommissionWrapper;
 import ru.codepinkglitch.auction.dtos.out.CommissionOut;
-import ru.codepinkglitch.auction.entities.*;
+import ru.codepinkglitch.auction.entities.BidEntity;
+import ru.codepinkglitch.auction.entities.BuyerEntity;
+import ru.codepinkglitch.auction.entities.CommissionEntity;
 import ru.codepinkglitch.auction.enums.BidStatus;
 import ru.codepinkglitch.auction.enums.ExceptionEnum;
 import ru.codepinkglitch.auction.enums.Status;
-import ru.codepinkglitch.auction.exceptions.*;
-import ru.codepinkglitch.auction.repositories.*;
+import ru.codepinkglitch.auction.exceptions.ServiceException;
+import ru.codepinkglitch.auction.repositories.ArtistRepository;
+import ru.codepinkglitch.auction.repositories.BuyerRepository;
+import ru.codepinkglitch.auction.repositories.CommissionRepository;
+import ru.codepinkglitch.auction.repositories.UserDetailsRepository;
 import ru.codepinkglitch.auction.runnables.RunnableTask;
 
 import java.io.IOException;
@@ -35,15 +40,10 @@ public class CommissionService {
     private final TaskScheduler taskScheduler;
 
     public List<CommissionOut> findByTag(String tag) {
-        List<CommissionOut> filtered = commissionRepository.findAll()
+        return commissionRepository.findByTagsIgnoreCase(tag)
                 .stream()
-                .filter(x -> x.getTags().contains(tag))
                 .map(converter::commissionToOut)
                 .collect(Collectors.toList());
-        if(filtered.isEmpty()){
-            throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
-        }
-        return filtered;
     }
 
     @Transactional
@@ -67,7 +67,7 @@ public class CommissionService {
         bidEntity.setCommission(commission);
         commission.setBids(Collections.singletonList(bidEntity));
         CommissionOut commissionOut = converter.commissionToOut(commissionRepository.save(commission));
-        taskScheduler.schedule(new RunnableTask(commissionOut.getId(), commissionRepository),
+        taskScheduler.schedule(new RunnableTask(commissionRepository, commissionOut.getId()),
                 Date.from(commission.getClosingDate().atZone(ZoneId.systemDefault()).toInstant()));
         return commissionOut;
     }
@@ -79,11 +79,11 @@ public class CommissionService {
     @Transactional
     public CommissionOut setBid(BigDecimal bid, Long commissionId, String name) {
         Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
-        if(!optional.isPresent()) {
+        if (!optional.isPresent()) {
             throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
         }
         CommissionEntity commissionEntity = optional.get();
-        if(commissionEntity.getBids().stream()
+        if (commissionEntity.getBids().stream()
                 .filter(x -> x.getBidStatus().equals(BidStatus.HIGHEST))
                 .findFirst()
                 .orElseThrow(RuntimeException::new)
@@ -108,19 +108,19 @@ public class CommissionService {
     }
 
 
-    public void attachImage(Long commissionId, MultipartFile multipartFile, String name){
+    public void attachImage(Long commissionId, MultipartFile multipartFile, String name) {
         Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
-        if(!optional.isPresent()){
+        if (!optional.isPresent()) {
             throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
         }
         CommissionEntity commissionEntity = optional.get();
-        if(!commissionEntity.getAuthor().getUserDetails().getUsername().equals(name)){
+        if (!commissionEntity.getAuthor().getUserDetails().getUsername().equals(name)) {
             throw new ServiceException(ExceptionEnum.ACCESS_EXCEPTION);
         }
         try {
             commissionEntity.setPreviewPicture(Base64.getEncoder().encodeToString(multipartFile.getBytes()));
             commissionRepository.save(commissionEntity);
-        } catch(IOException e){
+        } catch (IOException e) {
             throw new ServiceException(ExceptionEnum.PICTURE_EXCEPTION);
         }
 
@@ -128,11 +128,11 @@ public class CommissionService {
 
     public byte[] getPreview(Long commissionId) {
         Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
-        if(!optional.isPresent()){
+        if (!optional.isPresent()) {
             throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
         }
         CommissionEntity commissionEntity = optional.get();
-        if(commissionEntity.getPreviewPicture() == null){
+        if (commissionEntity.getPreviewPicture() == null) {
             throw new ServiceException(ExceptionEnum.PICTURE_EXCEPTION);
         }
         return Base64.getDecoder().decode(commissionEntity.getPreviewPicture());
@@ -140,17 +140,17 @@ public class CommissionService {
 
     public void attachFinishedImage(Long commissionId, MultipartFile multipartFile, String name) {
         Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
-        if(!optional.isPresent()){
+        if (!optional.isPresent()) {
             throw new ServiceException(ExceptionEnum.PICTURE_EXCEPTION);
         }
         CommissionEntity commissionEntity = optional.get();
-        if(!commissionEntity.getAuthor().getUserDetails().getUsername().equals(name)){
+        if (!commissionEntity.getAuthor().getUserDetails().getUsername().equals(name)) {
             throw new ServiceException(ExceptionEnum.ACCESS_EXCEPTION);
         }
         try {
             commissionEntity.setFinishedPicture(Base64.getEncoder().encodeToString(multipartFile.getBytes()));
             commissionRepository.save(commissionEntity);
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw new ServiceException(ExceptionEnum.PICTURE_EXCEPTION);
         }
 
@@ -158,21 +158,21 @@ public class CommissionService {
 
     public byte[] getFinishedImage(Long commissionId, String name) {
         Optional<CommissionEntity> optional = commissionRepository.findById(commissionId);
-        if(!optional.isPresent()){
+        if (!optional.isPresent()) {
             throw new ServiceException(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION);
         }
         CommissionEntity commissionEntity = optional.get();
-        if(commissionEntity.getStatus().equals(Status.OPEN)){
+        if (commissionEntity.getStatus().equals(Status.OPEN)) {
             throw new ServiceException(ExceptionEnum.COMMISSION_NOT_OVER_EXCEPTION);
         }
         BidEntity bidEntity = commissionEntity.getBids().stream()
                 .filter(x -> x.getBidStatus().equals(BidStatus.WON))
                 .findFirst()
                 .orElseThrow(RuntimeException::new);
-        if(!bidEntity.getBuyer().getUserDetails().getUsername().equals(name)){
+        if (!bidEntity.getBuyer().getUserDetails().getUsername().equals(name)) {
             throw new ServiceException(ExceptionEnum.ACCESS_EXCEPTION);
         }
-        if(commissionEntity.getFinishedPicture() == null){
+        if (commissionEntity.getFinishedPicture() == null) {
             throw new ServiceException(ExceptionEnum.PICTURE_EXCEPTION);
         }
         return Base64.getDecoder().decode(commissionEntity.getFinishedPicture());

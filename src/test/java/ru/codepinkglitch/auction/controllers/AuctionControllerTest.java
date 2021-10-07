@@ -1,7 +1,6 @@
 package ru.codepinkglitch.auction.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -27,6 +26,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashSet;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -39,18 +39,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @FixMethodOrder(MethodSorters.JVM)
-public class MainControllerTest {
+public class AuctionControllerTest {
 
-    @Autowired
-    WebApplicationContext webApplicationContext;
-
-    @Autowired
-    TestService testService;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    MockMvc mockMvc;
     static boolean initIsDone = false;
     static String artistUsername = "Ivan123";
     static String artistPassword = "123";
@@ -64,39 +54,45 @@ public class MainControllerTest {
     static long commissionId;
     static String commissionTag = "character";
     static BigDecimal commissionMinimalBid;
-
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
+    @Autowired
+    WebApplicationContext webApplicationContext;
+    @Autowired
+    TestService testService;
+    @Autowired
+    ObjectMapper objectMapper;
+    MockMvc mockMvc;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         ConfigurableMockMvcBuilder builder =
                 MockMvcBuilders.webAppContextSetup(this.webApplicationContext)
                         .apply(documentationConfiguration(this.restDocumentation))
                         .apply(springSecurity());
         this.mockMvc = builder.build();
-        if(!initIsDone) {
+        if (!initIsDone) {
             testService.initForArtist(artistEmail, artistUsername, artistPassword);
             artistToken = new String(Base64.getEncoder().encode((artistUsername + ":" + artistPassword).getBytes()));
             testService.initForBuyer(buyerEmail, buyerUsername, buyerPassword);
             buyerToken = new String(Base64.getEncoder().encode((buyerUsername + ":" + buyerPassword).getBytes()));
             minimalBid = new BigDecimal("5.5");
             commissionMinimalBid = new BigDecimal("10.0");
-            commissionId = testService.initForCommission(artistUsername, Collections.singletonList(commissionTag), commissionMinimalBid).getId();
+            commissionId = testService.initForCommission(artistUsername, new HashSet<>(Collections.singletonList(commissionTag)), commissionMinimalBid).getId();
             initIsDone = true;
         }
     }
 
 
     @Test
-    public void createCommission() throws Exception{
-        String uri = "/main/";
+    public void createCommission() throws Exception {
+        String uri = "/api/auction/";
 
         CommissionWrapper commissionWrapper = new CommissionWrapper();
         commissionWrapper.setDaysPeriod(1);
         commissionWrapper.setHoursPeriod(1);
         commissionWrapper.setMinutesPeriod(1);
-        commissionWrapper.setTags(Arrays.asList("Character", "Cyberpunk"));
+        commissionWrapper.setTags(new HashSet<>(Arrays.asList(commissionTag, "Cyberpunk")));
         commissionWrapper.setMinimalBid(minimalBid);
 
 
@@ -114,12 +110,12 @@ public class MainControllerTest {
     }
 
     @Test
-    public void getAllCommissions() throws Exception{
-        String uri = "/main/all";
+    public void getAllCommissions() throws Exception {
+        String uri = "/api/auction/all";
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Basic " + buyerToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Basic " + buyerToken))
                 .andDo(document(uri.replace("/", "\\")))
                 .andExpect(jsonPath("$.[0].author.username").value(artistUsername))
                 .andExpect(jsonPath("$.[0].author.email").value(artistEmail))
@@ -127,13 +123,13 @@ public class MainControllerTest {
     }
 
     @Test
-    public void bidToCommission() throws Exception{
+    public void bidToCommission() throws Exception {
         BigDecimal newBid = commissionMinimalBid.add(new BigDecimal("1"));
-        String uri = "/main/?bid=" + newBid + "&commissionId=" + commissionId;
+        String uri = "/api/auction/?bid=" + newBid + "&commissionId=" + commissionId;
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Basic " + buyerToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Basic " + buyerToken))
                 .andDo(document(uri.replace("/", "\\").replace("?", "(question_mark)")))
                 .andExpect(jsonPath("$.bid.buyerUsername").value(buyerUsername))
                 .andExpect(jsonPath("$.bid.amount").value(newBid.toString()))
@@ -141,8 +137,8 @@ public class MainControllerTest {
     }
 
     @Test
-    public void getCommissionsByTag() throws Exception{
-        String uri = "/main/find?tag=" + commissionTag;
+    public void getCommissionsByTag() throws Exception {
+        String uri = "/api/auction/find?tag=" + commissionTag;
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -154,12 +150,12 @@ public class MainControllerTest {
     }
 
     @Test
-    public void catchExceptionOnGetPreview() throws Exception{
+    public void catchExceptionOnGetPreview() throws Exception {
         int unreachableCommissionId = 100;
-        String uri = "/main/preview?commissionId=" + unreachableCommissionId;
+        String uri = "/api/auction/preview?commissionId=" + unreachableCommissionId;
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri)
-                .header("Authorization", "Basic " + buyerToken))
+                        .header("Authorization", "Basic " + buyerToken))
                 .andDo(document(uri.replace("/", "\\").replace("?", "(question_mark)")))
                 .andDo(print())
                 .andExpect(jsonPath("$.message").value(ExceptionEnum.COMMISSION_DONT_EXIST_EXCEPTION.getMessage()))
@@ -167,8 +163,8 @@ public class MainControllerTest {
     }
 
     @Test
-    public void uploadingPreviewImage() throws Exception{
-        String uri = "/main/image?commissionId=" + commissionId;
+    public void uploadingPreviewImage() throws Exception {
+        String uri = "/api/auction/image?commissionId=" + commissionId;
 
         File file = new File("src/test/java/ru/codepinkglitch/auction/resources/previewImage.jpeg");
         MockMultipartFile mockFile = new MockMultipartFile("file", file.getName(), MediaType.IMAGE_JPEG_VALUE, Files.readAllBytes(file.toPath()));
@@ -184,8 +180,8 @@ public class MainControllerTest {
     }
 
     @Test
-    public void uploadingFinishedImage() throws Exception{
-        String uri = "/main/finishedImage?commissionId=" + commissionId;
+    public void uploadingFinishedImage() throws Exception {
+        String uri = "/api/auction/finishedImage?commissionId=" + commissionId;
 
         File file = new File("src/test/java/ru/codepinkglitch/auction/resources/finishedPicture.jpeg");
         MockMultipartFile mockFile = new MockMultipartFile("file", file.getName(), MediaType.IMAGE_JPEG_VALUE, Files.readAllBytes(file.toPath()));
@@ -201,8 +197,8 @@ public class MainControllerTest {
     }
 
     @Test
-    public void getPreviewImage() throws Exception{
-        String uri = "/main/preview?commissionId=" + commissionId;
+    public void getPreviewImage() throws Exception {
+        String uri = "/api/auction/preview?commissionId=" + commissionId;
 
         byte[] previewImage = mockMvc.perform(MockMvcRequestBuilders.get(uri)
                         .header("Authorization", "Basic " + buyerToken))

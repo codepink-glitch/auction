@@ -58,7 +58,7 @@ public class ArtistControllerTest {
     static String username = "Petr321";
     static String password = "123";
     static String token;
-    String uri = "/artist/";
+    String uri = "/api/artist/";
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("target/generated-snippets");

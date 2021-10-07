@@ -6,16 +6,15 @@ import javax.persistence.*;
 
 @Data
 @MappedSuperclass
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class AbstractUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Embedded
     private BillingDetailsEntity billingDetails;
-
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private MyUserDetails userDetails;

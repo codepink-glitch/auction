@@ -1,11 +1,13 @@
 package ru.codepinkglitch.auction.dtos.in;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
 @Data
-public class BuyerIn extends AbstractUserIn{
+@EqualsAndHashCode(callSuper = true)
+public class BuyerIn extends AbstractUserIn {
 
     private List<Long> bidsIds;
 

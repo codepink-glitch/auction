@@ -72,7 +72,7 @@ public class RegisterControllerTest {
         buyerIn.setEmail("vasily@mail.su");
         buyerIn.setBidsIds(new ArrayList<>());
 
-        String uri = "/register/buyer";
+        String uri = "/api/register/buyer";
         mockMvc.perform(post(uri)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buyerIn)))
@@ -101,7 +101,7 @@ public class RegisterControllerTest {
         artistIn.setPassword("123");
         artistIn.setEmail("petro@mail.su");
 
-        String uri = "/register/artist";
+        String uri = "/api/register/artist";
         mockMvc.perform(post(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(artistIn)))

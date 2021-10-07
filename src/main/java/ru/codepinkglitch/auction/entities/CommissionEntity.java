@@ -9,8 +9,9 @@ import ru.codepinkglitch.auction.enums.Status;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -31,7 +32,7 @@ public class CommissionEntity {
     private String finishedPicture;
 
     @ElementCollection
-    private List<String> tags = new ArrayList<>();
+    private Set<String> tags = new HashSet<>();
 
     @OneToOne
     private ArtistEntity author;

@@ -59,7 +59,7 @@ public class BuyerControllerTest {
     static String username = "Vasily123";
     static String password = "123";
     static String token;
-    String uri = "/buyer/";
+    String uri = "/api/buyer/";
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("target/generated-snippets");

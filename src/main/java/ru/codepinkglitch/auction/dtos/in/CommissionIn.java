@@ -5,6 +5,7 @@ import ru.codepinkglitch.auction.enums.Status;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class CommissionIn {
@@ -15,7 +16,7 @@ public class CommissionIn {
     private LocalDateTime closingDate;
     private boolean previewPicturePresent;
     private boolean finishedPicturePresent;
-    private List<String> tags;
+    private Set<String> tags;
     private ArtistIn author;
     private List<BidIn> bids;
 }

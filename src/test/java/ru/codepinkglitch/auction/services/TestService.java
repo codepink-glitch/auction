@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class TestService {
@@ -77,7 +78,7 @@ public class TestService {
         return artistService.save(converter.artistToDto(artistEntity));
     }
 
-    public CommissionOut initForCommission(String artistUsername, List<String> tags, BigDecimal minimalBid) {
+    public CommissionOut initForCommission(String artistUsername, Set<String> tags, BigDecimal minimalBid) {
         CommissionWrapper commissionWrapper = new CommissionWrapper();
         commissionWrapper.setDaysPeriod(0);
         commissionWrapper.setHoursPeriod(1);

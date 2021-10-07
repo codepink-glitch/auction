@@ -16,8 +16,8 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/main/")
-public class MainController {
+@RequestMapping("/auction/")
+public class AuctionController {
 
     private final CommissionService commissionService;
 

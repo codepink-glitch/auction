@@ -5,7 +5,6 @@ import lombok.Data;
 @Data
 public class BillingDetailsIn {
 
-    private Long id;
     private String name;
     private String street;
     private String city;
