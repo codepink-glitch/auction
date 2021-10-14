@@ -37,7 +37,7 @@ public class ArtistController {
     }
 
     @GetMapping("/commissions")
-    public ResponseEntity<List<CommissionIn>> getCommissions(){
+    public ResponseEntity<List<CommissionOut>> getCommissions(){
         return new ResponseEntity<>(artistService.getCommissions(SecurityContextHolder.getContext().getAuthentication().getName()), HttpStatus.OK);
     }
 

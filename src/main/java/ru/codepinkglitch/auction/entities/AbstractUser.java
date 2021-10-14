@@ -5,7 +5,7 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Data
-@MappedSuperclass
+@Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class AbstractUser {
 

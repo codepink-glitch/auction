@@ -63,13 +63,13 @@ public class ArtistService {
         return converter.artistToOut(artistEntity);
     }
 
-    public List<CommissionIn> getCommissions(String name) {
+    public List<CommissionOut> getCommissions(String name) {
         ArtistEntity artistEntity = artistRepository.findArtistEntityByUserDetails(userDetailsRepository.findMyUserDetailsByUsername(name));
         if(artistEntity == null){
             throw new ServiceException(ExceptionEnum.USER_DONT_EXIST_EXCEPTION);
         }
         return artistEntity.getCommissions().stream()
-                .map(converter::commissionToDto)
+                .map(converter::commissionToOut)
                 .collect(Collectors.toList());
     }
 
